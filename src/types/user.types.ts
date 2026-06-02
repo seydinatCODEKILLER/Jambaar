@@ -1,10 +1,4 @@
-import {
-  BloodType,
-  DonorGrade,
-  Gender,
-  HealthStructureStatus,
-  Role,
-} from "./shared.types";
+import { BloodType, DonorGrade, Gender, Role } from "./shared.types";
 
 // ─── Sous-interfaces ──────────────────────────────────────────
 
@@ -17,14 +11,6 @@ export interface JambaarsProfile {
   nextEligibilityAt: string | null;
   city: string | null;
   district: string | null;
-}
-
-export interface EmployerStructure {
-  id: string;
-  name: string;
-  status: HealthStructureStatus;
-  isVerified: boolean;
-  address: string;
 }
 
 // ─── User ─────────────────────────────────────────────────────
@@ -44,11 +30,8 @@ export interface User {
   isActive: boolean;
   latitude: number | null;
   longitude: number | null;
-  healthStructureId: string | null;
-  isStructureAdmin: boolean;
   createdAt: string;
   jambaarsProfile: JambaarsProfile | null;
-  employerStructure: EmployerStructure | null;
 }
 
 // ─── Payloads ─────────────────────────────────────────────────

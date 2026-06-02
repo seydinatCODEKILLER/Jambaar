@@ -81,7 +81,7 @@ export default function DonorLayout() {
 
   const safeBottom = Platform.select({
     ios: insets.bottom,
-    android: insets.bottom > 0 ? insets.bottom : 20,
+    android: insets.bottom > 0 ? insets.bottom + 8 : 28,
     default: 8,
   });
   const tabBarHeight = 64 + safeBottom;

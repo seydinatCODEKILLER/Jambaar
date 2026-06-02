@@ -16,7 +16,6 @@ export interface AlertStructure {
   longitude: number | null;
 }
 
-// Ajoute ces valeurs dans ton shared.types.ts
 export const AlertOriginEnum = {
   CNTS_DIRECT: "CNTS_DIRECT",
   CNTS_ESCALATION: "CNTS_ESCALATION",
@@ -49,15 +48,7 @@ export interface Alert {
 
 // ─── Alert Response ───────────────────────────────────────────
 
-export interface AlertResponseDonor {
-  id: string;
-  firstName: string;
-  lastName: string;
-  bloodType: BloodType | null;
-  avatarUrl: string | null;
-  phone: string;
-}
-
+// On garde ce type car il est utilisé dans ActiveEngagement
 export interface AlertResponse {
   id: string;
   status: AlertResponseStatus;
@@ -65,29 +56,9 @@ export interface AlertResponse {
   respondedAt: string;
   arrivedAt: string | null;
   qrCode: string | null;
-  donor: AlertResponseDonor;
-}
-
-export interface AlertResponsesSummary {
-  confirmed: number;
-  arrived: number;
-  declined: number;
-  noShow: number;
 }
 
 // ─── Payloads ─────────────────────────────────────────────────
-
-export interface CreateAlertPayload {
-  bloodType: BloodType;
-  quantityNeeded: number;
-  urgencyLevel: UrgencyLevel;
-  serviceUnit?: ServiceUnit;
-  radiusKm?: number;
-  address?: string;
-  latitude?: number;
-  longitude?: number;
-  expiresAt?: string;
-}
 
 export interface ConfirmAlertPayload {
   etaMinutes?: number;
@@ -101,11 +72,6 @@ export interface ConfirmAlertResponse {
   isQuotaReached: boolean;
 }
 
-export interface CreateAlertResponse {
-  alert: Alert;
-  notifiedDonors: number;
-}
-
 // ─── Engagement Actif ─────────────────────────────────────────
 
 export interface ActiveEngagement {
@@ -116,7 +82,7 @@ export interface ActiveEngagement {
     id: string;
     bloodType: BloodType;
     urgencyLevel: UrgencyLevel;
-    origin: AlertOrigin; // 🆕 AJOUT CRITIQUE ICI
+    origin: AlertOrigin;
     healthStructure: AlertStructure;
   };
 }

@@ -1,5 +1,11 @@
 import { useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, Animated } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Animated,
+  Dimensions,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -11,28 +17,30 @@ import { useThemeStore } from "@/src/store/theme.store";
 import { ThemeToggle } from "@/src/components/ui/ThemeToggle";
 import { AppColors } from "@/src/theme/colors";
 
-// ─── Composant Logo Jambaar ────────────────────────────────────
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// ─── Logo ─────────────────────────────────────────────────────
 function JambaarLogo({ colors }: { colors: AppColors }) {
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
       <View
         style={{
-          width: 36,
-          height: 36,
+          width: 30,
+          height: 30,
           backgroundColor: colors.red,
-          borderRadius: 10,
+          borderRadius: 8,
           alignItems: "center",
           justifyContent: "center",
         }}
       >
-        <Ionicons name="heart" size={18} color="#FFFFFF" />
+        <Ionicons name="heart" size={14} color="#FFFFFF" />
       </View>
       <Text
         style={{
           color: colors.white,
-          fontSize: 22,
+          fontSize: 18,
           fontWeight: "700",
-          letterSpacing: -0.5,
+          letterSpacing: -0.3,
         }}
       >
         Jambaar
@@ -41,74 +49,144 @@ function JambaarLogo({ colors }: { colors: AppColors }) {
   );
 }
 
-// ─── Composant Bouton d'action ─────────────────────────────────
+// ─── Bouton principal ──────────────────────────────────────────
 interface ActionButtonProps {
   icon: keyof typeof Ionicons.glyphMap;
   label: string;
   sublabel: string;
   onPress: () => void;
-  variant: "primary" | "secondary";
   colors: AppColors;
 }
 
-function ActionButton({
+function PrimaryButton({
   icon,
   label,
   sublabel,
   onPress,
-  variant,
   colors,
 }: ActionButtonProps) {
-  const isPrimary = variant === "primary";
   return (
     <TouchableOpacity
       onPress={onPress}
-      activeOpacity={0.8}
-      style={[
-        {
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 14,
-          borderRadius: 16,
-          padding: 16,
-        },
-        isPrimary
-          ? { backgroundColor: colors.red }
-          : {
-              backgroundColor: colors.cardBg,
-              borderWidth: 1,
-              borderColor: colors.cardBorder,
-            },
-      ]}
+      activeOpacity={0.82}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 14,
+        borderRadius: 16,
+        padding: 16,
+        backgroundColor: colors.red,
+      }}
     >
       <View
         style={{
-          width: 40,
-          height: 40,
+          width: 38,
+          height: 38,
           borderRadius: 10,
+          backgroundColor: "rgba(255,255,255,0.15)",
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: isPrimary
-            ? "rgba(255,255,255,0.18)"
-            : colors.cardBorder,
         }}
       >
-        <Ionicons name={icon} size={20} color="#FFFFFF" />
+        <Ionicons name={icon} size={18} color="#FFFFFF" />
       </View>
-      <View style={{ flex: 1, gap: 2 }}>
-        <Text style={{ color: colors.white, fontSize: 15, fontWeight: "700" }}>
+      <View style={{ flex: 1 }}>
+        <Text
+          style={{
+            color: "#FFFFFF",
+            fontSize: 14,
+            fontWeight: "600",
+            letterSpacing: -0.2,
+          }}
+        >
           {label}
         </Text>
-        <Text style={{ color: colors.textMuted, fontSize: 12 }}>
+        <Text
+          style={{
+            color: "rgba(255,255,255,0.55)",
+            fontSize: 11,
+            marginTop: 1,
+          }}
+        >
           {sublabel}
         </Text>
       </View>
       <Ionicons
         name="chevron-forward"
-        size={18}
-        color={isPrimary ? "#FFFFFF" : colors.textMuted}
+        size={16}
+        color="rgba(255,255,255,0.6)"
       />
     </TouchableOpacity>
+  );
+}
+
+// ─── Orbe central avec pulsation ──────────────────────────────
+function HeroOrb({
+  colors,
+  pulseAnim,
+  ring2Anim,
+}: {
+  colors: AppColors;
+  pulseAnim: Animated.Value;
+  ring2Anim: Animated.Value;
+}) {
+  return (
+    <View
+      style={{
+        width: 180,
+        height: 180,
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 28,
+      }}
+    >
+      <Animated.View
+        style={{
+          position: "absolute",
+          width: 180,
+          height: 180,
+          borderRadius: 90,
+          borderWidth: 1,
+          borderColor: "rgba(200,20,20,0.12)",
+          transform: [{ scale: pulseAnim }],
+        }}
+      />
+      <Animated.View
+        style={{
+          position: "absolute",
+          width: 137,
+          height: 137,
+          borderRadius: 68,
+          borderWidth: 1,
+          borderColor: "rgba(200,20,20,0.18)",
+          transform: [{ scale: ring2Anim }],
+        }}
+      />
+      <View
+        style={{
+          width: 100,
+          height: 100,
+          borderRadius: 50,
+          borderWidth: 1,
+          borderColor: "rgba(200,20,20,0.30)",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "rgba(200,20,20,0.08)",
+        }}
+      >
+        <LinearGradient
+          colors={["rgba(232,53,53,0.25)", "rgba(139,0,0,0.12)"]}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            borderRadius: 50,
+          }}
+        />
+        <Ionicons name="heart" size={44} color={colors.red} />
+      </View>
+    </View>
   );
 }
 
@@ -117,6 +195,7 @@ export default function WelcomeScreen() {
   const router = useRouter();
   const colors = useColors();
   const theme = useThemeStore((s) => s.theme);
+  const isDark = theme === "dark";
 
   useCheckPendingRegistration();
 
@@ -124,134 +203,134 @@ export default function WelcomeScreen() {
   const slideAnim = useRef(new Animated.Value(40)).current;
   const btnAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const ring2Anim = useRef(new Animated.Value(1)).current;
 
   const styles = useThemedStyles((c) => ({
-    container: { flex: 1, backgroundColor: c.bg },
-    safeArea: { flex: 1, paddingHorizontal: 24 },
-    bgHaloTop: {
+    container: {
+      flex: 1,
+      backgroundColor: isDark ? "#0a0808" : "#fff5f5",
+    },
+    haloTop: {
       position: "absolute",
-      top: -80,
+      top: -100,
       left: -80,
-      width: 300,
-      height: 300,
-      borderRadius: 150,
-      backgroundColor: c.redGlow,
+      width: 320,
+      height: 280,
+      borderRadius: 160,
+      backgroundColor: isDark ? "rgba(200,20,20,0.14)" : "rgba(200,20,20,0.06)",
     },
-    bgHaloBottom: {
+    haloBottom: {
       position: "absolute",
-      bottom: 100,
-      right: -60,
-      width: 220,
-      height: 220,
-      borderRadius: 110,
-      backgroundColor: c.haloLight,
+      bottom: 80,
+      right: -70,
+      width: 240,
+      height: 200,
+      borderRadius: 120,
+      backgroundColor: isDark ? "rgba(180,10,10,0.08)" : "rgba(200,20,20,0.04)",
     },
+    safeArea: { flex: 1, paddingHorizontal: 24 },
     header: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       paddingTop: 8,
-      paddingBottom: 24,
+      paddingBottom: 12,
+    },
+    headerRight: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
     },
     statusBadge: {
       flexDirection: "row",
       alignItems: "center",
-      gap: 6,
-      backgroundColor: "rgba(34,197,94,0.12)",
-      paddingHorizontal: 10,
-      paddingVertical: 5,
+      gap: 5,
+      backgroundColor: "rgba(34,197,94,0.10)",
+      borderWidth: 0.5,
+      borderColor: "rgba(34,197,94,0.28)",
       borderRadius: 20,
-      borderWidth: 1,
-      borderColor: "rgba(34,197,94,0.25)",
+      paddingHorizontal: 10,
+      paddingVertical: 4,
     },
     statusDot: {
-      width: 6,
-      height: 6,
+      width: 5,
+      height: 5,
       borderRadius: 3,
-      backgroundColor: c.success,
+      backgroundColor: "#22c55e",
     },
-    statusText: { color: c.success, fontSize: 11, fontWeight: "600" },
+    statusText: {
+      color: "#22c55e",
+      fontSize: 10,
+      fontWeight: "500",
+      letterSpacing: 0.3,
+    },
     heroBlock: {
       flex: 1,
+      alignItems: "center",
       justifyContent: "center",
+      paddingBottom: 8,
+    },
+    eyebrow: {
+      color: isDark ? "#a06060" : "#9b5c5c",
+      fontSize: 9,
+      fontWeight: "600",
+      letterSpacing: 3,
+      textTransform: "uppercase",
+      marginBottom: 10,
+      textAlign: "center",
+    },
+    heroTitle: {
+      fontSize: 38,
+      fontWeight: "800",
+      lineHeight: 42,
+      textAlign: "center",
+      letterSpacing: -1.5,
+      marginBottom: 14,
+    },
+    heroTitleWhite: {
+      color: isDark ? "#f0e4e4" : "#1a0a0a",
+    },
+    heroTitleRed: {
+      color: c.red,
+    },
+    heroSubtitle: {
+      color: isDark ? "#c49090" : "#7a4444",
+      fontSize: 13,
+      textAlign: "center",
+      lineHeight: 21,
+      maxWidth: 240,
+    },
+    heroSubtitleAccent: {
+      color: isDark ? "#e08080" : "#9b5050",
+    },
+    actionsBlock: {
+      gap: 10,
+      marginBottom: 12,
+    },
+    footer: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 5,
+      paddingVertical: 8,
+    },
+    footerText: {
+      color: isDark ? "#a07070" : "#9b7070",
+      fontSize: 13,
+    },
+    footerLink: {
+      color: c.red,
+      fontSize: 13,
+      fontWeight: "500",
+    },
+    slogan: {
       alignItems: "center",
       paddingBottom: 16,
     },
-    heroIllustration: {
-      width: 160,
-      height: 160,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: 32,
-    },
-    heroGradient: {
-      position: "absolute",
-      width: 160,
-      height: 160,
-      borderRadius: 80,
-    },
-    heroIconOuter: {
-      width: 100,
-      height: 100,
-      borderRadius: 50,
-      backgroundColor: "rgba(220,30,30,0.12)",
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 1,
-      borderColor: "rgba(220,30,30,0.25)",
-    },
-    heroIconInner: {
-      width: 72,
-      height: 72,
-      borderRadius: 36,
-      backgroundColor: "rgba(220,30,30,0.15)",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    pulse: {
-      position: "absolute",
-      borderRadius: 999,
-      borderWidth: 1,
-      borderColor: "rgba(220,30,30,0.15)",
-    },
-    pulse1: { width: 130, height: 130 },
-    pulse2: { width: 160, height: 160, borderColor: "rgba(220,30,30,0.07)" },
-    heroTextBlock: { alignItems: "center", gap: 12 },
-    heroEyebrow: {
-      color: c.textMuted,
-      fontSize: 10,
-      fontWeight: "600",
-      letterSpacing: 2.5,
-    },
-    heroTitle: {
-      color: c.white,
-      fontSize: 36,
-      fontWeight: "800",
-      textAlign: "center",
-      lineHeight: 44,
-      letterSpacing: -1,
-    },
-    heroSubtitle: {
-      color: c.textMuted,
-      fontSize: 14,
-      textAlign: "center",
-      lineHeight: 22,
-      maxWidth: 280,
-    },
-    actionsBlock: { gap: 12, marginBottom: 20 },
-    footer: {
-      flexDirection: "row",
-      justifyContent: "center",
-      alignItems: "center",
-      marginBottom: 16,
-    },
-    footerText: { color: c.textMuted, fontSize: 14 },
-    footerLink: { color: c.red, fontSize: 14, fontWeight: "700" },
-    slogan: { paddingBottom: 8, alignItems: "center" },
     sloganText: {
-      color: c.textSubtle,
-      fontSize: 11,
-      letterSpacing: 0.5,
+      color: isDark ? "#7a5050" : "#c4a0a0",
+      fontSize: 10,
+      letterSpacing: 1,
       fontStyle: "italic",
     },
   }));
@@ -261,149 +340,134 @@ export default function WelcomeScreen() {
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 700,
+          duration: 650,
           useNativeDriver: true,
         }),
         Animated.timing(slideAnim, {
           toValue: 0,
-          duration: 700,
+          duration: 650,
           useNativeDriver: true,
         }),
       ]),
       Animated.timing(btnAnim, {
         toValue: 1,
-        duration: 400,
+        duration: 380,
         useNativeDriver: true,
       }),
     ]).start();
 
-    const pulseAnimation = Animated.loop(
-      Animated.stagger(400, [
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.15,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-        ]),
-        Animated.sequence([
-          Animated.timing(pulseAnim, {
-            toValue: 1.15,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-          Animated.timing(pulseAnim, {
-            toValue: 1,
-            duration: 800,
-            useNativeDriver: true,
-          }),
-        ]),
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.08,
+          duration: 1800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1800,
+          useNativeDriver: true,
+        }),
       ]),
     );
-    pulseAnimation.start();
-    return () => pulseAnimation.stop();
+
+    const pulse2 = Animated.loop(
+      Animated.sequence([
+        Animated.delay(600),
+        Animated.timing(ring2Anim, {
+          toValue: 1.1,
+          duration: 1800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(ring2Anim, {
+          toValue: 1,
+          duration: 1800,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+
+    pulse.start();
+    pulse2.start();
+
+    return () => {
+      pulse.stop();
+      pulse2.stop();
+    };
   }, []);
+
+  const fadeSlide = {
+    opacity: fadeAnim,
+    transform: [{ translateY: slideAnim }],
+  };
 
   return (
     <View style={styles.container}>
-      <StatusBar style={theme === "dark" ? "light" : "dark"} />
+      <StatusBar style={isDark ? "light" : "dark"} />
 
-      <View style={styles.bgHaloTop} />
-      <View style={styles.bgHaloBottom} />
+      <View style={styles.haloTop} />
+      <View style={styles.haloBottom} />
 
       <SafeAreaView style={styles.safeArea}>
         {/* ── Header ── */}
-        <Animated.View
-          style={[
-            styles.header,
-            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
-          ]}
-        >
+        <Animated.View style={[styles.header, fadeSlide]}>
           <JambaarLogo colors={colors} />
-
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <View style={styles.headerRight}>
             <View style={styles.statusBadge}>
               <View style={styles.statusDot} />
               <Text style={styles.statusText}>Opérationnel</Text>
             </View>
-            <ThemeToggle size={36} />
+            <ThemeToggle size={34} />
           </View>
         </Animated.View>
 
-        {/* ── Bloc héro ── */}
-        <Animated.View
-          style={[
-            styles.heroBlock,
-            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
-          ]}
-        >
-          <View style={styles.heroIllustration}>
-            <LinearGradient
-              colors={[colors.redGlow, "transparent"]}
-              style={styles.heroGradient}
-            />
-            <View style={styles.heroIconOuter}>
-              <View style={styles.heroIconInner}>
-                <Ionicons name="heart" size={40} color={colors.red} />
-              </View>
-            </View>
-            <Animated.View
-              style={[
-                styles.pulse,
-                styles.pulse1,
-                { transform: [{ scale: pulseAnim }] },
-              ]}
-            />
-            <Animated.View
-              style={[
-                styles.pulse,
-                styles.pulse2,
-                { transform: [{ scale: pulseAnim }] },
-              ]}
-            />
-          </View>
+        {/* ── Hero ── */}
+        <Animated.View style={[styles.heroBlock, fadeSlide]}>
+          <HeroOrb
+            colors={colors}
+            pulseAnim={pulseAnim}
+            ring2Anim={ring2Anim}
+          />
 
-          <View style={styles.heroTextBlock}>
-            <Text style={styles.heroEyebrow}>
-              COMMUNAUTÉ DE DONNEURS DE SANG
-            </Text>
-            <Text style={styles.heroTitle}>
-              Chaque goutte{"\n"}
-              <Text style={{ color: colors.red }}>compte</Text>
-            </Text>
-            <Text style={styles.heroSubtitle}>
-              Rejoignez la communauté Jambaar. Sauvez des vies, gagnez des
-              points et débloquez des récompenses.
-            </Text>
-          </View>
+          <Text style={styles.eyebrow}>Communauté de donneurs de sang</Text>
+
+          <Text style={styles.heroTitle}>
+            <Text style={styles.heroTitleWhite}>Chaque goutte{"\n"}</Text>
+            <Text style={styles.heroTitleRed}>compte.</Text>
+          </Text>
+
+          <Text style={styles.heroSubtitle}>
+            Rejoignez Jambaar. Sauvez des vies,{"\n"}
+            <Text style={styles.heroSubtitleAccent}>gagnez des points</Text> et
+            débloquez{"\n"}des récompenses exclusives.
+          </Text>
         </Animated.View>
 
-        {/* ── Boutons d'action ── */}
+        {/* ── Actions ── */}
         <Animated.View style={[styles.actionsBlock, { opacity: btnAnim }]}>
-          <ActionButton
+          <PrimaryButton
             icon="person"
             label="Je suis donneur"
             sublabel="Inscription gratuite • 2 minutes"
             onPress={() => router.push("/(auth)/register-donor")}
-            variant="primary"
             colors={colors}
           />
-          {/* Les boutons Hôpital et CNTS ont été supprimés */}
         </Animated.View>
 
         {/* ── Footer ── */}
         <Animated.View style={[styles.footer, { opacity: btnAnim }]}>
-          <Text style={styles.footerText}>Déjà membre ? </Text>
+          <Text style={styles.footerText}>Déjà membre ?</Text>
           <TouchableOpacity
             onPress={() => router.push("/(auth)/reconnect-donor")}
             activeOpacity={0.7}
+            style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
           >
             <Text style={styles.footerLink}>Se reconnecter</Text>
+            <Ionicons
+              name="arrow-forward-circle"
+              size={16}
+              color={colors.red}
+            />
           </TouchableOpacity>
         </Animated.View>
 

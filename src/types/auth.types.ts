@@ -29,24 +29,6 @@ export interface RegisterDonorResponse {
   phone?: string;
 }
 
-export interface RegisterStructureResponse {
-  message: string;
-  director: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: Role;
-    isStructureAdmin: boolean;
-    healthStructureId: string;
-  };
-  structure: {
-    id: string;
-    name: string;
-    status: "PENDING_REVIEW";
-  };
-}
-
 // ─── Payloads (ce qu'on envoie à l'API) ──────────────────────
 
 export interface RegisterDonorPayload {
@@ -57,61 +39,6 @@ export interface RegisterDonorPayload {
   bloodType: BloodType;
   gender: Gender;
   dateOfBirth?: string;
-}
-
-export interface RegisterStructurePayload {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  password: string;
-  structureName: string;
-  registrationNumber: string;
-  region: string;
-  address: string;
-  structurePhone?: string;
-  structureEmail?: string;
-  latitude?: number;
-  longitude?: number;
-}
-
-export interface RegisterCntsPayload {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  password: string;
-  structureName: string;
-  registrationNumber: string;
-  region: string;
-  address: string;
-  structurePhone?: string;
-  structureEmail?: string;
-  latitude?: number;
-  longitude?: number;
-}
-
-export interface RegisterHospitalPayload {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  password: string;
-  structureName: string;
-  registrationNumber: string;
-  region: string;
-  address: string;
-  structureType: "HOSPITAL" | "HEALTH_CENTER";
-  affiliatedCntsId: string; // OBLIGATOIRE
-  structurePhone?: string;
-  structureEmail?: string;
-  latitude?: number;
-  longitude?: number;
-}
-
-export interface LoginPayload {
-  email: string;
-  password: string;
 }
 
 export interface VerifyOtpPayload {

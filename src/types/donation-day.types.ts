@@ -40,41 +40,13 @@ export interface DonationDay {
   cancelReason: string | null;
   createdAt: string;
   healthStructure: { id: string; name: string };
-  createdBy: { id: string; firstName: string; lastName: string };
   _count?: { registrations: number };
   remainingSpots?: number;
-}
-
-export interface DayRegistration {
-  id: string;
-  status: RegistrationStatus;
-  timeSlot: string | null;
-  registeredAt: string;
-  attendedAt: string | null;
-  donor: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    phone: string;
-    bloodType: string;
-  };
-}
-
-export interface RegistrationSummary {
-  registered: number;
-  attended: number;
-  noShow: number;
-  cancelled: number;
 }
 
 // ─── Réponses API spécifiques ────────────────────────────────
 
 export type DayListResponse = PaginatedResponse<DonationDay>;
-
-export interface DayDetailResponse {
-  registrations: DayRegistration[];
-  summary: RegistrationSummary;
-}
 
 // ─── Payloads (Requêtes) ────────────────────────────────────
 
@@ -83,19 +55,3 @@ export interface ListDaysFilters {
   limit?: number;
   status?: DonationDayStatus;
 }
-
-export interface CreateDayPayload {
-  title: string;
-  description?: string;
-  address: string;
-  latitude?: number;
-  longitude?: number;
-  scheduledDate: string;
-  startTime: string;
-  endTime: string;
-  targetDonors?: number;
-  bloodTypesNeeded?: string[];
-  photoUri?: string | null;
-}
-
-export type UpdateDayPayload = Partial<CreateDayPayload>;

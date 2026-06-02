@@ -1,32 +1,15 @@
 // ─── Enums partagés ───────────────────────────────────────────
-// Ces types sont utilisés dans plusieurs domaines (user, alert, donation...)
 
 export const RoleEnum = {
   DONOR: "DONOR",
-  CNTS_AGENT: "CNTS_AGENT",
-  CNTS_ADMIN: "CNTS_ADMIN",
-  HOSPITAL_AGENT: "HOSPITAL_AGENT",
-  ADMIN: "ADMIN",
 } as const;
-
-export type Role = (typeof RoleEnum)[keyof typeof RoleEnum];
+export type Role = "DONOR"; // Seul le rôle DONOR existe sur cette app
 
 export const GenderEnum = {
   MALE: "MALE",
   FEMALE: "FEMALE",
 } as const;
 export type Gender = (typeof GenderEnum)[keyof typeof GenderEnum];
-
-export const BloodRequestStatusEnum = {
-  PENDING: "PENDING",
-  FULFILLED: "FULFILLED",
-  PARTIALLY_FULFILLED: "PARTIALLY_FULFILLED",
-  ESCALATED_TO_ALERT: "ESCALATED_TO_ALERT",
-  REJECTED: "REJECTED",
-  CANCELLED: "CANCELLED",
-} as const;
-export type BloodRequestStatus =
-  (typeof BloodRequestStatusEnum)[keyof typeof BloodRequestStatusEnum];
 
 export const AlertOriginEnum = {
   CNTS_DIRECT: "CNTS_DIRECT",
@@ -99,23 +82,6 @@ export const CouponStatusEnum = {
 } as const;
 export type CouponStatus =
   (typeof CouponStatusEnum)[keyof typeof CouponStatusEnum];
-
-export const BloodStockLevelEnum = {
-  CRITICAL: "CRITICAL",
-  LOW: "LOW",
-  ADEQUATE: "ADEQUATE",
-  SURPLUS: "SURPLUS",
-} as const;
-export type BloodStockLevel =
-  (typeof BloodStockLevelEnum)[keyof typeof BloodStockLevelEnum];
-
-export const HealthStructureStatusEnum = {
-  PENDING_REVIEW: "PENDING_REVIEW",
-  VERIFIED: "VERIFIED",
-  SUSPENDED: "SUSPENDED",
-} as const;
-export type HealthStructureStatus =
-  (typeof HealthStructureStatusEnum)[keyof typeof HealthStructureStatusEnum];
 
 // ─── Pagination ───────────────────────────────────────────────
 

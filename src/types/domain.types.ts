@@ -1,6 +1,5 @@
 import {
   BloodType,
-  BloodStockLevel,
   CouponStatus,
   DonorGrade,
   ServiceUnit,
@@ -29,30 +28,12 @@ export interface Donation {
   donatedAt: string | null;
   validatedAt: string | null;
   notes: string | null;
-   healthStructure: DonationStructure; 
+  healthStructure: DonationStructure;
   alertResponse: {
     qrCode: string | null;
     etaMinutes: number | null;
     alert: DonationAlert;
   } | null;
-}
-
-export interface ScanDonationPayload {
-  qrCode: string;
-  notes?: string;
-  testResultsJson?: string;
-}
-
-export interface ScanDonationResponse {
-  message: string;
-  donation: Donation;
-  jambaar: {
-    pointsAwarded: number;
-    newTotalPoints: number;
-    newGrade: DonorGrade;
-    gradeChanged: boolean;
-    nextEligibilityAt: string;
-  };
 }
 
 // ─── Jambaar ──────────────────────────────────────────────────
@@ -96,16 +77,6 @@ export interface LeaderboardEntry {
     avatarUrl: string | null;
     bloodType: BloodType | null;
   };
-}
-
-// ─── Blood Stock ──────────────────────────────────────────────
-
-export interface BloodStock {
-  id: string;
-  bloodType: BloodType;
-  quantity: number;
-  level: BloodStockLevel;
-  updatedAt: string;
 }
 
 // ─── Coupon ───────────────────────────────────────────────────
@@ -153,7 +124,6 @@ export interface RedeemRewardPayload {
   rewardId: string;
 }
 
-// L'API retourne directement le Coupon lors du redeem
 export type RedeemRewardResponse = Coupon;
 
 export interface CouponsResponse {
