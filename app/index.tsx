@@ -1,10 +1,20 @@
-import { Text, View, StyleSheet } from "react-native";
+import { Redirect } from "expo-router";
+import { useIsAuthenticated, useUserRole } from "@/src/hooks/useAuthStore";
 
 export default function Index() {
-  return (
-    <View className="flex-1 items-center justify-center">
-      <Text className="text-2xl font-bold text-red-500">Hello, World!</Text>
-    </View>
-  );
-}
+  const isAuthenticated = useIsAuthenticated();
+  const role = useUserRole();
 
+  // 1. Si non connecté → On va vers l'accueil auth
+  if (!isAuthenticated) {
+    return <Redirect href="/(auth)/welcome" />;
+  }
+
+  // 2. Si l'utilisateur n'est PAS un Donneur (Admin, CNTS, Hôpital)
+  if (role !== "DONOR") {
+    return <Redirect href="/+not-found" />;
+  }
+
+  // 3. Si c'est un DONOR → Va vers le groupe donneur
+  return <Redirect href="/(donor)" />;
+}
