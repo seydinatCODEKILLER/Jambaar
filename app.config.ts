@@ -26,7 +26,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       process.env.GOOGLE_SERVICES_JSON ?? "./google-services.json",
     adaptiveIcon: {
       backgroundColor: "#E6F4FE",
-      foregroundImage: "./assets/images/forground.png",
+      foregroundImage: "./assets/images/icon.png",
     },
   },
   web: {
