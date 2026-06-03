@@ -43,3 +43,6 @@ example
 /android
 
 .env
+
+firebase-service-account.json
+google-services.json

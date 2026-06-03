@@ -14,7 +14,7 @@ import { clearPendingQr } from "@/src/utils/qr.utils";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-// ⏳ À DÉCOMMENTER quand expo-brightness sera installé : import * as Brightness from "expo-brightness";
+import * as Brightness from "expo-brightness";
 import * as Haptics from "expo-haptics";
 import QRCode from "react-native-qrcode-svg";
 import { StatusBar } from "expo-status-bar";
@@ -34,8 +34,7 @@ export default function QrCodeScreen() {
   const colors = useColors();
   const theme = useThemeStore((s) => s.theme);
 
-  // ⏳ À DÉCOMMENTER quand expo-brightness sera installé :
-  // const [previousBrightness, setPreviousBrightness] = useState<number | null>(null);
+  const [previousBrightness, setPreviousBrightness] = useState<number | null>(null);
 
   const { mutateAsync: cancelConfirmation, isPending: isCancelling } =
     useCancelConfirmation();
@@ -331,34 +330,33 @@ export default function QrCodeScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, []);
 
-  // ⏳ À DÉCOMMENTER quand expo-brightness sera installé :
-  // useEffect(() => {
-  //   const setup = async () => {
-  //     try {
-  //       const { status } = await Brightness.requestPermissionsAsync();
-  //       if (status !== "granted") return;
-  //       const current = await Brightness.getBrightnessAsync();
-  //       setPreviousBrightness(current);
-  //       await Brightness.setBrightnessAsync(1);
-  //     } catch {}
-  //   };
-  //   setup();
-  //   return () => {
-  //     const restore = async () => {
-  //       try {
-  //         if (previousBrightness !== null)
-  //           await Brightness.setBrightnessAsync(previousBrightness);
-  //       } catch {}
-  //     };
-  //     restore();
-  //   };
-  // }, []);
+  useEffect(() => {
+    const setup = async () => {
+      try {
+        const { status } = await Brightness.requestPermissionsAsync();
+        if (status !== "granted") return;
+        const current = await Brightness.getBrightnessAsync();
+        setPreviousBrightness(current);
+        await Brightness.setBrightnessAsync(1);
+      } catch {}
+    };
+    setup();
+    return () => {
+      const restore = async () => {
+        try {
+          if (previousBrightness !== null)
+            await Brightness.setBrightnessAsync(previousBrightness);
+        } catch {}
+      };
+      restore();
+    };
+  }, []);
 
   const handleShare = async () => {
     try {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       await Share.share({
-        message: `🩸 Mon code de passage Jambaar : ${qrCode}`, // ✅ Changé Vita-Link en Jambaar
+        message: `🩸 Mon code de passage Jambaar : ${qrCode}`,
       });
     } catch {
       Alert.alert("Erreur", "Impossible de partager le code.");
