@@ -11,7 +11,10 @@ import {
   Platform,
   Share,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
@@ -36,7 +39,7 @@ import {
 import { savePendingQr } from "@/src/utils/qr.utils";
 import { useColors, useThemedStyles } from "@/src/theme/useTheme";
 import { useThemeStore } from "@/src/store/theme.store";
-import { useSmartBack } from "@/src/hooks/useSmartBack"; // ✅ Ajoute cette ligne
+import { useSmartBack } from "@/src/hooks/useSmartBack";
 import { AppColors } from "@/src/theme/colors";
 import { NetworkErrorScreen } from "@/src/components/ui/NetworkErrorScreen";
 import { isNetworkError } from "@/src/utils/error.utils";
@@ -114,6 +117,8 @@ function EtaModal({
   destinationText: string;
 }) {
   const [etaText, setEtaText] = useState("");
+  // ✅ Utilisation du hook pour connaître la zone sécurisée du téléphone (barre de nav native)
+  const insets = useSafeAreaInsets();
 
   const handleConfirm = () => {
     const eta = etaText.trim() ? parseInt(etaText) : undefined;
@@ -140,7 +145,8 @@ function EtaModal({
             borderTopLeftRadius: 24,
             borderTopRightRadius: 24,
             paddingHorizontal: 24,
-            paddingBottom: Platform.OS === "ios" ? 40 : 28,
+            // ✅ FIX: Utilisation dynamique de la zone safe au lieu de valeurs codées en dur
+            paddingBottom: 24 + insets.bottom,
             paddingTop: 12,
             borderTopWidth: 1,
             borderColor: colors.cardBorder,
@@ -307,7 +313,6 @@ export default function AlertDetailScreen() {
   const colors = useColors();
   const theme = useThemeStore((s) => s.theme);
 
-  // ✅ AJOUT : Extraction de `error` et `refetch` pour le NetworkErrorScreen
   const { data: alert, isLoading, isError, error, refetch } = useAlert(id);
 
   const { data: activeEngagement } = useActiveEngagement();
@@ -460,43 +465,6 @@ export default function AlertDetailScreen() {
       backgroundColor: c.textSubtle,
       marginHorizontal: 2,
     },
-    mapContainer: {
-      borderRadius: 16,
-      overflow: "hidden",
-      marginBottom: 20,
-      borderWidth: 1,
-      borderColor: c.cardBorder,
-      position: "relative",
-    },
-    map: { height: 160 },
-    markerPin: {
-      width: 34,
-      height: 34,
-      borderRadius: 17,
-      backgroundColor: c.red,
-      alignItems: "center",
-      justifyContent: "center",
-      borderWidth: 2,
-      borderColor: "#FFFFFF",
-      shadowColor: c.red,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.5,
-      shadowRadius: 8,
-      elevation: 6,
-    },
-    mapAddressOverlay: {
-      position: "absolute",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 6,
-      backgroundColor: "rgba(8,8,8,0.85)",
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-    },
-    mapAddressText: { color: c.textMuted, fontSize: 11, flex: 1 },
     section: { marginBottom: 16 },
     sectionTitle: {
       color: c.textMuted,
@@ -579,16 +547,18 @@ export default function AlertDetailScreen() {
       fontSize: 11,
       marginTop: 1,
     },
+    // ✅ Nouveau design "Pill" pour le bouton indisponible
     declineBtn: {
-      width: 104,
       alignItems: "center",
       justifyContent: "center",
-      gap: 5,
-      backgroundColor: c.cardBg,
+      gap: 6,
+      backgroundColor: "transparent",
       borderWidth: 1.5,
       borderColor: c.cardBorder,
       borderRadius: 16,
       paddingVertical: 14,
+      paddingHorizontal: 12,
+      minWidth: 104,
     },
     declineBtnDisabled: { opacity: 0.4 },
     declineBtnText: { color: c.textMuted, fontSize: 14, fontWeight: "600" },
@@ -614,10 +584,10 @@ export default function AlertDetailScreen() {
   }));
 
   const goBack = useSmartBack({
-    defaultRoute: "/(donor)", // Par défaut, retour au Home des alertes
+    defaultRoute: "/(donor)",
     routeMap: {
       home: "/(donor)",
-      notifications: "/(donor)", // Si on vient du centre de notifs
+      notifications: "/(donor)",
     },
   });
 
@@ -653,14 +623,13 @@ export default function AlertDetailScreen() {
           });
         }
 
-        // 🆕 On passe l'origin et l'alertId correctement
         router.push({
           pathname: "/(donor)/qrcode" as any,
           params: {
             qrCode: result.qrCode,
             alertId: id,
             isExpired: "false",
-            origin: alert?.origin || "HOSPITAL_DIRECT", // ← CRITIQUE POUR LE QR SCREEN
+            origin: alert?.origin || "HOSPITAL_DIRECT",
           },
         });
       } catch {
@@ -707,9 +676,7 @@ export default function AlertDetailScreen() {
     );
   }
 
-  // ✅ NOUVEAU : Gestion robuste des erreurs
   if (isError || !alert) {
-    // 1. Si c'est une erreur réseau → NetworkErrorScreen avec bouton Réessayer
     if (isNetworkError(error)) {
       return (
         <View style={styles.container}>
@@ -718,7 +685,6 @@ export default function AlertDetailScreen() {
       );
     }
 
-    // 2. Si c'est une erreur API (ex: 404 Alerte expirée/supprimée) → Message d'erreur classique
     return (
       <View style={[styles.container, styles.centered]}>
         <Ionicons name="alert-circle-outline" size={40} color={colors.red} />
@@ -743,12 +709,8 @@ export default function AlertDetailScreen() {
     (alert.quantityConfirmed / alert.quantityNeeded) * 100,
     100,
   );
-  // const hasCoords =
-  //   alert.healthStructure.latitude != null &&
-  //   alert.healthStructure.longitude != null;
 
   const hasCoords = false;
-  // 🆕 Logique d'origine de l'alerte (CNTS vs Hôpital)
   const isCntsAlert =
     alert.origin === "CNTS_DIRECT" || alert.origin === "CNTS_ESCALATION";
   const destinationText = isCntsAlert ? "au CNTS" : "à l'hôpital";
@@ -849,53 +811,6 @@ export default function AlertDetailScreen() {
             </View>
           </View>
 
-          {/* ── Carte ── */}
-          {/* {hasCoords && (
-            <View style={styles.mapContainer}>
-              <MapView
-                style={styles.map}
-                initialRegion={{
-                  latitude: alert.healthStructure.latitude!,
-                  longitude: alert.healthStructure.longitude!,
-                  latitudeDelta: 0.02,
-                  longitudeDelta: 0.02,
-                }}
-                scrollEnabled={false}
-                zoomEnabled={false}
-                pitchEnabled={false}
-                rotateEnabled={false}
-              >
-                <Marker
-                  coordinate={{
-                    latitude: alert.healthStructure.latitude!,
-                    longitude: alert.healthStructure.longitude!,
-                  }}
-                  title={alert.healthStructure.name}
-                >
-                  <View style={styles.markerPin}>
-                    <Ionicons name="heart" size={14} color="#FFFFFF" />
-                  </View>
-                </Marker>
-                <Circle
-                  center={{
-                    latitude: alert.healthStructure.latitude!,
-                    longitude: alert.healthStructure.longitude!,
-                  }}
-                  radius={alert.radiusKm * 1000}
-                  fillColor="rgba(220,30,30,0.08)"
-                  strokeColor="rgba(220,30,30,0.25)"
-                  strokeWidth={1}
-                />
-              </MapView>
-              <View style={styles.mapAddressOverlay}>
-                <Ionicons name="location" size={12} color={colors.red} />
-                <Text style={styles.mapAddressText} numberOfLines={1}>
-                  {alert.healthStructure.address}
-                </Text>
-              </View>
-            </View>
-          )} */}
-
           {/* ── Infos ── */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Détails de l&apos;alerte</Text>
@@ -963,12 +878,19 @@ export default function AlertDetailScreen() {
             </View>
           </View>
 
-          <View style={{ height: 80 + tabBarHeight }} />
+          {/* ESPACE VIDE POUR ÉVITER QUE LE CONTENU SOIT CACHÉ PAR LES BOUTTONS FIXES EN BAS + LA TAB BAR */}
+          <View style={{ height: 140 + tabBarHeight }} />
         </ScrollView>
 
         {/* ── Actions fixes ── */}
         <View
-          style={[styles.actionsBlock, { paddingBottom: 12 + tabBarHeight }]}
+          style={[
+            styles.actionsBlock,
+            {
+              paddingBottom: 16 + tabBarHeight,
+              backgroundColor: colors.bg,
+            },
+          ]}
         >
           {hasConfirmedThisAlert ? (
             <>
@@ -980,7 +902,7 @@ export default function AlertDetailScreen() {
                       qrCode: activeEngagement?.qrCode,
                       alertId: activeEngagement?.alert?.id,
                       origin:
-                        activeEngagement?.alert?.origin || "HOSPITAL_DIRECT", // 🆕
+                        activeEngagement?.alert?.origin || "HOSPITAL_DIRECT",
                       isExpired: "false",
                     },
                   })
@@ -993,7 +915,6 @@ export default function AlertDetailScreen() {
                 </View>
                 <View>
                   <Text style={styles.confirmBtnText}>Mon QR Code</Text>
-                  {/* 🆕 Texte dynamique */}
                   <Text style={styles.confirmBtnSub}>
                     Présentez {destinationText}
                   </Text>
@@ -1006,7 +927,10 @@ export default function AlertDetailScreen() {
                 style={[
                   styles.declineBtn,
                   isCancelling && styles.declineBtnDisabled,
-                  { borderColor: colors.amber + "40" },
+                  {
+                    borderColor: colors.amber + "40",
+                    backgroundColor: colors.amber + "10",
+                  },
                 ]}
               >
                 {isCancelling ? (
@@ -1090,11 +1014,6 @@ export default function AlertDetailScreen() {
                   <ActivityIndicator color={colors.textMuted} size="small" />
                 ) : (
                   <>
-                    <Ionicons
-                      name="close-circle-outline"
-                      size={20}
-                      color={colors.textMuted}
-                    />
                     <Text style={styles.declineBtnText}>Indisponible</Text>
                   </>
                 )}

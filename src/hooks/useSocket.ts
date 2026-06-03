@@ -141,18 +141,40 @@ export const useSocket = () => {
     // ── 3. BADGE DÉBLOQUÉ (Pour les DONNEURS) ────────────────
     socket.on(
       "badges:earned",
-      (data: { name: string; description: string; iconUrl?: string }) => {
-        logger.info("🏅 Badge débloqué :", data.name);
+      (data: {
+        badges: {
+          id: string;
+          name: string;
+          description: string;
+          iconUrl?: string;
+        }[];
+      }) => {
+        logger.info(
+          "🏅 Badges débloqués :",
+          data.badges.map((b) => b.name),
+        );
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-        setBadgeUnlock({
-          name: data.name,
-          description: data.description,
-          iconUrl: data.iconUrl,
+        // Affiche chaque badge avec un délai pour ne pas les superposer
+        data.badges.forEach((badge, index) => {
+          setTimeout(() => {
+            setBadgeUnlock({
+              name: badge.name,
+              description: badge.description,
+              iconUrl: badge.iconUrl,
+            });
+          }, index * 2500); // 2.5s entre chaque badge
         });
+
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.jambaarssBadges });
       },
     );
+
+    // ── 9. NOUVEAU BADGE CRÉÉ PAR L'ADMIN ────────────────────
+    socket.on("badges:new", () => {
+      logger.info("🏅 Nouveau badge disponible");
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.jambaarssBadges });
+    });
 
     // ── 4. QUOTA ATTEINT ─────────────────────────────────────
     socket.on("alert:quota_reached", (data: { alertId: string }) => {

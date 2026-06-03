@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
 import dayjs from "dayjs";
 import { useSmartBack } from "@/src/hooks/useSmartBack";
 import { useMyBadges } from "@/src/hooks/useJambaar";
@@ -19,6 +18,9 @@ import { useColors, useThemedStyles } from "@/src/theme/useTheme";
 import { AppColors } from "@/src/theme/colors";
 import { isNetworkError } from "@/src/utils/error.utils";
 import { NetworkErrorScreen } from "@/src/components/ui/NetworkErrorScreen";
+import { useFocusEffect } from "expo-router";
+import { QUERY_KEYS } from "@/src/constants/query_key";
+import { useQueryClient } from "@tanstack/react-query";
 
 function getDefaultEmoji(badge: Badge): string {
   const name = badge.name.toLowerCase();
@@ -121,7 +123,7 @@ function BadgesSkeleton({ colors }: { colors: AppColors }) {
   }));
 
   return (
-    <View style={{ paddingHorizontal: 20, opacity: 0.6, gap: 28 }}>
+    <View style={{ opacity: 0.6, gap: 28 }}>
       <View style={[styles.cardBg, { padding: 18, gap: 12 }]}>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <View style={[styles.line, { width: "40%" }]} />
@@ -148,113 +150,7 @@ function BadgesSkeleton({ colors }: { colors: AppColors }) {
   );
 }
 
-// ─── SparkleParticle — Math.random() stabilisé avec useRef ────
-function SparkleParticle({
-  index,
-  totalParticles,
-  colors,
-}: {
-  index: number;
-  totalParticles: number;
-  colors: AppColors;
-}) {
-  const angle = (index / totalParticles) * 360;
-
-  // ✅ Fix : Math.random() mémorisé, ne recalcule pas à chaque render
-  const distance = useRef(40 + Math.random() * 30).current;
-  const size = useRef(4 + Math.random() * 6).current;
-  const delay = useRef(Math.random() * 200).current;
-
-  const opacity = useRef(new Animated.Value(0)).current;
-  const translateX = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(0)).current;
-  const scale = useRef(new Animated.Value(0)).current;
-  const rotate = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const rad = (angle * Math.PI) / 180;
-    const dx = Math.cos(rad) * distance;
-    const dy = Math.sin(rad) * distance;
-
-    const animation = Animated.sequence([
-      Animated.delay(400 + delay),
-      Animated.parallel([
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.spring(translateX, {
-          toValue: dx,
-          friction: 12,
-          tension: 40,
-          useNativeDriver: true,
-        }),
-        Animated.spring(translateY, {
-          toValue: dy,
-          friction: 12,
-          tension: 40,
-          useNativeDriver: true,
-        }),
-        Animated.spring(scale, {
-          toValue: 1,
-          friction: 8,
-          tension: 40,
-          useNativeDriver: true,
-        }),
-        Animated.timing(rotate, {
-          toValue: 1,
-          duration: 600,
-          useNativeDriver: true,
-        }),
-      ]),
-      Animated.timing(opacity, {
-        toValue: 0,
-        duration: 400,
-        delay: 300,
-        useNativeDriver: true,
-      }),
-    ]);
-
-    animation.start();
-
-    const hapticTimer = setTimeout(() => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    }, 400 + delay);
-
-    // ✅ Fix : cleanup
-    return () => {
-      animation.stop();
-      clearTimeout(hapticTimer);
-    };
-  }, []);
-
-  return (
-    <Animated.View
-      style={{
-        position: "absolute",
-        width: size,
-        height: size,
-        borderRadius: size / 2,
-        backgroundColor: index % 2 === 0 ? colors.amber : colors.white,
-        opacity,
-        transform: [
-          { translateX },
-          { translateY },
-          { scale },
-          {
-            rotate: rotate.interpolate({
-              inputRange: [0, 1],
-              outputRange: ["0deg", "360deg"],
-            }),
-          },
-        ],
-      }}
-    />
-  );
-}
-
-// ─── Badge Card ────────────────────────────────────────────────
+// ─── Badge Card — animation simplifiée ────────────────────────
 function BadgeCard({
   badge,
   index,
@@ -266,166 +162,59 @@ function BadgeCard({
   colors: AppColors;
   styles: any;
 }) {
-  const scaleAnim = useRef(new Animated.Value(0.85)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const glowOpacity = useRef(new Animated.Value(0)).current;
-  const newBadgeShine = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.92)).current;
 
   const isUnlocked = badge.isUnlocked;
   const isNew = isNewBadge(badge);
   const badgeEmoji = badge.iconUrl ? null : getDefaultEmoji(badge);
 
   useEffect(() => {
-    let shineLoop: Animated.CompositeAnimation | null = null;
-
-    if (isNew) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-
-      Animated.sequence([
-        Animated.delay(index * 120 + 200),
-        Animated.parallel([
-          Animated.spring(scaleAnim, {
-            toValue: 1.15,
-            friction: 4,
-            tension: 60,
-            useNativeDriver: true,
-          }),
-          Animated.timing(fadeAnim, {
-            toValue: 1,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-          Animated.timing(glowOpacity, {
-            toValue: 1,
-            duration: 400,
-            useNativeDriver: false,
-          }),
-        ]),
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          friction: 3,
-          tension: 50,
-          useNativeDriver: true,
-        }),
-      ]).start();
-
-      // ✅ Fix : loop mémorisé pour pouvoir le stopper
-      shineLoop = Animated.loop(
-        Animated.sequence([
-          Animated.timing(newBadgeShine, {
-            toValue: 1,
-            duration: 1000,
-            useNativeDriver: true,
-          }),
-          Animated.timing(newBadgeShine, {
-            toValue: 0,
-            duration: 1000,
-            useNativeDriver: true,
-          }),
-        ]),
-      );
-      shineLoop.start();
-    } else {
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          friction: 8,
-          tension: 50,
-          delay: index * 60,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 350,
-          delay: index * 60,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-
-    // ✅ Fix : cleanup du loop infini
-    return () => {
-      shineLoop?.stop();
-    };
+    // Animation simple : fade + scale au montage, décalée par index
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        delay: index * 50,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        friction: 8,
+        tension: 50,
+        delay: index * 50,
+        useNativeDriver: true,
+      }),
+    ]).start();
   }, []);
 
   return (
-    // ✅ Fix : overflow "visible" pour éviter l'écran noir sur build release
     <Animated.View
       style={[
         styles.badgeCard,
         isUnlocked ? styles.badgeUnlocked : styles.badgeLocked,
-        isNew && { borderColor: colors.amber + "60" },
+        isNew && { borderColor: colors.amber + "70" },
         {
           opacity: fadeAnim,
           transform: [{ scale: scaleAnim }],
-          overflow: "visible",
         },
       ]}
     >
-      {isNew && (
-        <>
-          {Array.from({ length: 8 }).map((_, i) => (
-            <SparkleParticle
-              key={i}
-              index={i}
-              totalParticles={8}
-              colors={colors}
-            />
-          ))}
-        </>
-      )}
-
-      {isNew && (
-        <Animated.View
-          style={[
-            styles.newBadgeGlow,
-            {
-              opacity: glowOpacity,
-              transform: [
-                {
-                  scale: scaleAnim.interpolate({
-                    inputRange: [0.85, 1.15],
-                    outputRange: [0.5, 1.3],
-                  }),
-                },
-              ],
-            },
-          ]}
-        />
-      )}
-
-      {isUnlocked && <View style={styles.unlockedHalo} />}
+      {/* Barre accent top pour les badges débloqués */}
       {isUnlocked && (
         <View
           style={[
             styles.unlockedAccentBar,
-            isNew && { backgroundColor: colors.amber, opacity: 1 },
+            isNew && { backgroundColor: colors.amber },
           ]}
         />
       )}
 
-      {/* ✅ Fix : translateX avec valeurs numériques au lieu de "%" */}
+      {/* Badge "NEW" simple pour les nouveaux */}
       {isNew && (
-        <Animated.View
-          style={[
-            styles.newBadgeBanner,
-            {
-              transform: [
-                { rotate: "25deg" },
-                {
-                  translateX: newBadgeShine.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [-120, 120],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          <Text style={styles.newBadgeBannerText}>✨ NOUVEAU !</Text>
-        </Animated.View>
+        <View style={styles.newPill}>
+          <Text style={styles.newPillText}>NOUVEAU</Text>
+        </View>
       )}
 
       <View
@@ -439,11 +228,11 @@ function BadgeCard({
           badge.iconUrl ? (
             <Image
               source={{ uri: badge.iconUrl }}
-              style={[styles.badgeImage, isNew && styles.badgeImageNew]}
+              style={styles.badgeImage}
               resizeMode="contain"
             />
           ) : (
-            <Text style={[styles.badgeEmoji, isNew && styles.badgeEmojiNew]}>
+            <Text style={[styles.badgeEmoji, isNew && { fontSize: 28 }]}>
               {badgeEmoji}
             </Text>
           )
@@ -467,7 +256,7 @@ function BadgeCard({
         style={[
           styles.badgeName,
           !isUnlocked && styles.badgeNameLocked,
-          isNew && styles.badgeNameNew,
+          isNew && { color: colors.amber },
         ]}
         numberOfLines={2}
       >
@@ -476,9 +265,7 @@ function BadgeCard({
 
       {isUnlocked ? (
         <View style={[styles.earnedPill, isNew && styles.earnedPillNew]}>
-          <Text
-            style={[styles.earnedPillText, isNew && styles.earnedPillTextNew]}
-          >
+          <Text style={styles.earnedPillText}>
             {dayjs(badge.earnedAt).format("MMM YYYY")}
           </Text>
         </View>
@@ -516,11 +303,7 @@ function SectionHeader({
         ]}
       />
       <Text style={styles.sectionTitle}>{title}</Text>
-      {hasNew && (
-        <View style={styles.sectionNewBadge}>
-          <Text style={styles.sectionNewBadgeText}>🎉</Text>
-        </View>
-      )}
+      {hasNew && <Text style={{ fontSize: 14 }}>🎉</Text>}
       <View
         style={[
           styles.sectionCount,
@@ -546,15 +329,21 @@ function SectionHeader({
 // ─── Écran principal ───────────────────────────────────────────
 export default function BadgesScreen() {
   const colors = useColors();
+  const queryClient = useQueryClient();
   const { data, isLoading, isError, error, refetch } = useMyBadges();
   const hasNetworkError = isError && isNetworkError(error);
 
-  const headerAnim = useRef(new Animated.Value(0)).current;
+  useFocusEffect(
+    useCallback(() => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.jambaarssBadges });
+    }, []),
+  );
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
 
   const styles = useThemedStyles((c) => ({
     container: { flex: 1, backgroundColor: c.bg },
-    centered: { alignItems: "center", justifyContent: "center" },
     scrollContent: { paddingHorizontal: 20 },
     topHalo: {
       position: "absolute",
@@ -639,15 +428,6 @@ export default function BadgesScreen() {
       flex: 1,
       letterSpacing: 0.2,
     },
-    sectionNewBadge: {
-      width: 20,
-      height: 20,
-      borderRadius: 10,
-      backgroundColor: c.amber + "15",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    sectionNewBadgeText: { fontSize: 12 },
     sectionCount: {
       paddingHorizontal: 8,
       paddingVertical: 3,
@@ -666,23 +446,13 @@ export default function BadgesScreen() {
       justifyContent: "center",
       gap: 7,
       position: "relative",
-      // ✅ Fix : "visible" au lieu de "hidden" pour éviter l'écran noir
-      overflow: "visible",
+      overflow: "hidden",
     },
     badgeUnlocked: {
       backgroundColor: c.amber + "06",
       borderColor: c.amber + "28",
     },
     badgeLocked: { backgroundColor: c.cardBg, borderColor: c.cardBorder },
-    unlockedHalo: {
-      position: "absolute",
-      top: -16,
-      right: -16,
-      width: 60,
-      height: 60,
-      borderRadius: 30,
-      backgroundColor: c.amber + "10",
-    },
     unlockedAccentBar: {
       position: "absolute",
       top: 0,
@@ -692,6 +462,21 @@ export default function BadgesScreen() {
       borderRadius: 2,
       backgroundColor: c.amber,
       opacity: 0.7,
+    },
+    newPill: {
+      position: "absolute",
+      top: 6,
+      right: 6,
+      backgroundColor: c.amber,
+      borderRadius: 5,
+      paddingHorizontal: 4,
+      paddingVertical: 1,
+    },
+    newPillText: {
+      color: "#1A1A1A",
+      fontSize: 6,
+      fontWeight: "900",
+      letterSpacing: 0.5,
     },
     badgeIconWrap: {
       width: 48,
@@ -706,8 +491,8 @@ export default function BadgesScreen() {
       borderColor: c.amber + "28",
     },
     iconNewUnlocked: {
-      backgroundColor: c.amber + "20",
-      borderColor: c.amber + "45",
+      backgroundColor: c.amber + "22",
+      borderColor: c.amber + "50",
       borderWidth: 2,
     },
     iconLocked: {
@@ -716,7 +501,6 @@ export default function BadgesScreen() {
       borderColor: c.cardBorder,
     },
     badgeImage: { width: 36, height: 36 },
-    badgeImageNew: { width: 40, height: 40 },
     badgeImageLocked: { opacity: 0.25 },
     lockedImageContainer: {
       position: "relative",
@@ -733,7 +517,6 @@ export default function BadgesScreen() {
       justifyContent: "center",
     },
     badgeEmoji: { fontSize: 24 },
-    badgeEmojiNew: { fontSize: 28 },
     badgeName: {
       color: c.white,
       fontSize: 11,
@@ -743,7 +526,6 @@ export default function BadgesScreen() {
       lineHeight: 15,
     },
     badgeNameLocked: { color: c.textSubtle, fontWeight: "600" },
-    badgeNameNew: { color: c.amber, fontWeight: "900" },
     earnedPill: {
       backgroundColor: c.amber + "15",
       borderRadius: 6,
@@ -753,8 +535,8 @@ export default function BadgesScreen() {
       borderColor: c.amber + "28",
     },
     earnedPillNew: {
-      backgroundColor: c.amber + "20",
-      borderColor: c.amber + "45",
+      backgroundColor: c.amber + "25",
+      borderColor: c.amber + "50",
     },
     earnedPillText: {
       color: c.amber,
@@ -762,41 +544,11 @@ export default function BadgesScreen() {
       fontWeight: "700",
       letterSpacing: 0.3,
     },
-    earnedPillTextNew: { color: c.amber, fontWeight: "800" },
     badgeCriteria: {
       color: c.textMuted,
       fontSize: 9,
       textAlign: "center",
       lineHeight: 13,
-    },
-    newBadgeGlow: {
-      position: "absolute",
-      top: -20,
-      left: -20,
-      right: -20,
-      bottom: -20,
-      borderRadius: 30,
-      backgroundColor: c.amber + "12",
-      zIndex: -1,
-    },
-    newBadgeBanner: {
-      position: "absolute",
-      top: 6,
-      right: -28,
-      backgroundColor: c.amber,
-      paddingHorizontal: 10,
-      paddingVertical: 2,
-      shadowColor: c.amber,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.5,
-      shadowRadius: 4,
-      elevation: 4,
-    },
-    newBadgeBannerText: {
-      color: "#1A1A1A",
-      fontSize: 7,
-      fontWeight: "900",
-      letterSpacing: 0.5,
     },
   }));
 
@@ -810,9 +562,9 @@ export default function BadgesScreen() {
   });
 
   useEffect(() => {
-    Animated.timing(headerAnim, {
+    Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 500,
+      duration: 400,
       useNativeDriver: true,
     }).start();
   }, []);
@@ -820,31 +572,15 @@ export default function BadgesScreen() {
   useEffect(() => {
     if (!data) return;
     const pct = data.total > 0 ? data.earned / data.total : 0;
-    Animated.spring(progressAnim, {
+    Animated.timing(progressAnim, {
       toValue: pct,
-      friction: 7,
-      tension: 40,
+      duration: 600,
       useNativeDriver: false,
     }).start();
   }, [data]);
 
   const renderHeader = () => (
-    <Animated.View
-      style={[
-        styles.header,
-        {
-          opacity: headerAnim,
-          transform: [
-            {
-              translateY: headerAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [12, 0],
-              }),
-            },
-          ],
-        },
-      ]}
-    >
+    <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
       <TouchableOpacity
         onPress={goBack}
         style={styles.backBtn}
@@ -914,7 +650,7 @@ export default function BadgesScreen() {
         {renderHeader()}
 
         {/* ── Carte progression ── */}
-        <Animated.View style={[styles.progressCard, { opacity: headerAnim }]}>
+        <Animated.View style={[styles.progressCard, { opacity: fadeAnim }]}>
           <View style={styles.progressTop}>
             <View style={styles.progressLeft}>
               <Ionicons name="trophy" size={16} color={colors.amber} />

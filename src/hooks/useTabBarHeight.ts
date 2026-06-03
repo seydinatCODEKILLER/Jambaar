@@ -3,6 +3,12 @@ import { Platform } from "react-native";
 
 export function useBottomTabBarHeight() {
   const insets = useSafeAreaInsets();
-  // Hauteur standard d'une tab bar + safe area
-  return 49 + (Platform.OS === 'ios' ? insets.bottom : 0);
+
+  const safeBottom = Platform.select({
+    ios: insets.bottom,
+    android: insets.bottom > 0 ? insets.bottom + 8 : 28,
+    default: 8,
+  }) ?? 8;
+
+  return 64 + safeBottom; // ← correspond exactement au layout
 }

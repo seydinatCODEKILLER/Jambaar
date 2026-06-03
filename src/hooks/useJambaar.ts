@@ -14,7 +14,7 @@ export const useMyBadges = () => {
   return useQuery({
     queryKey: QUERY_KEYS.jambaarssBadges,
     queryFn: () => jambaarApi.getMyBadges(),
-    staleTime: 60_000,
+    staleTime: 0,
   });
 };
 
