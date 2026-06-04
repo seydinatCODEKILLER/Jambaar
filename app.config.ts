@@ -2,12 +2,12 @@ import { ExpoConfig, ConfigContext } from "expo/config";
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "Jambaar",
-  slug: "jambaar",
+  name: "VitaLink",
+  slug: "vitalink",
   version: "1.0.0",
   orientation: "portrait",
   icon: "./assets/images/icon.png",
-  scheme: "jambaar",
+  scheme: "vitalink",
   userInterfaceStyle: "automatic",
   updates: {
     url: "https://u.expo.dev/bb5978b7-463f-460e-bc57-d6b1f17959cf",
