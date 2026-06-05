@@ -201,7 +201,8 @@ function BloodTypeBanner({
           Groupe sanguin manquant
         </Text>
         <Text style={{ color: colors.textMuted, fontSize: 12, lineHeight: 16 }}>
-          Renseignez-le pour recevoir les alertes compatibles.
+          Vous recevez toutes les alertes. Renseignez-le pour n'afficher que
+          celles compatibles.
         </Text>
       </View>
       <Ionicons name="chevron-forward" size={16} color={colors.amber} />
@@ -870,7 +871,7 @@ export default function DonorHomeScreen() {
             <EmptyState
               icon="heart-outline"
               title="Aucune alerte dans votre zone"
-              subtitle="Vous serez notifié dès qu'un hôpital a besoin de votre groupe sanguin."
+              subtitle="Vous serez notifié dès qu'un hôpital proche a besoin de donneurs."
             />
           )
         }
