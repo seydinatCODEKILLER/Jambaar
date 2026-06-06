@@ -26,8 +26,6 @@ import { AppColors } from "@/src/theme/colors";
 import dayjs from "dayjs";
 
 // ─── Grade Config ─────────────────────────────────────────────
-// Les couleurs de grade sont fixes (indépendantes du thème),
-// donc on les garde en dehors du système de thème.
 const GRADE_CONFIG: Record<
   string,
   {
@@ -465,7 +463,9 @@ export default function ProfileScreen() {
           </Text>
           <TouchableOpacity
             style={styles.editBtn}
-            onPress={() => router.push("/(donor)/profile/edit?from=profile" as any)}
+            onPress={() =>
+              router.push("/(donor)/profile/edit?from=profile" as any)
+            }
             activeOpacity={0.7}
           >
             <Ionicons
@@ -728,7 +728,9 @@ export default function ProfileScreen() {
               icon="call-outline"
               label="Téléphone"
               value={user?.phone}
-              onPress={() => router.push("/(donor)/profile/edit?from=profile" as Href)}
+              onPress={() =>
+                router.push("/(donor)/profile/edit?from=profile" as Href)
+              }
               colors={colors}
             />
             <View style={styles.sep} />
@@ -736,7 +738,9 @@ export default function ProfileScreen() {
               icon="mail-outline"
               label="Email"
               value={user?.email ?? "Non renseigné"}
-              onPress={() => router.push("/(donor)/profile/edit?from=profile" as Href)}
+              onPress={() =>
+                router.push("/(donor)/profile/edit?from=profile" as Href)
+              }
               colors={colors}
             />
             <View style={styles.sep} />
@@ -745,7 +749,9 @@ export default function ProfileScreen() {
               label="Groupe sanguin"
               value={bloodLabel}
               valueColor={colors.red}
-              onPress={() => router.push("/(donor)/profile/edit?from=profile" as Href)}
+              onPress={() =>
+                router.push("/(donor)/profile/edit?from=profile" as Href)
+              }
               colors={colors}
             />
           </View>
@@ -758,14 +764,18 @@ export default function ProfileScreen() {
             <ProfileRow
               icon="time-outline"
               label="Historique des dons"
-              onPress={() => router.push("/(donor)/donations?from=profile" as Href)}
+              onPress={() =>
+                router.push("/(donor)/donations?from=profile" as Href)
+              }
               colors={colors}
             />
             <View style={styles.sep} />
             <ProfileRow
               icon="settings-outline"
               label="Paramètres"
-              onPress={() => router.push("/(donor)/profile/settings?from=profile" as Href)}
+              onPress={() =>
+                router.push("/(donor)/profile/settings?from=profile" as Href)
+              }
               colors={colors}
             />
             <View style={styles.sep} />
@@ -776,6 +786,14 @@ export default function ProfileScreen() {
               colors={colors}
             />
           </View>
+          <View style={styles.sep} />
+          <ProfileRow
+            icon="checkmark-circle-outline"
+            label="Critères d'éligibilité"
+            valueColor={colors.success}
+            onPress={() => router.push("/(donor)/profile/eligibility" as Href)}
+            colors={colors}
+          />
         </Animated.View>
 
         {/* ── Actions ── */}

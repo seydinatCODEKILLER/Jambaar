@@ -168,6 +168,7 @@ export default function DonorLayout() {
         <Tabs.Screen name="jambaar/leaderboard" options={{ href: null }} />
         <Tabs.Screen name="jambaar/rewards" options={{ href: null }} />
         <Tabs.Screen name="profile/edit" options={{ href: null }} />
+        <Tabs.Screen name="profile/eligibility" options={{ href: null }} />
         <Tabs.Screen name="profile/settings" options={{ href: null }} />
         <Tabs.Screen name="donation-days/[id]" options={{ href: null }} />
       </Tabs>
