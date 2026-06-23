@@ -3,9 +3,18 @@ import dayjs from "dayjs";
 
 export const useIsEligible = () => {
   const profile = useAuthStore((state) => state.user?.jambaarsProfile);
-  if (!profile) return { isEligible: true, daysLeft: 0, nextDate: null };
+
+  if (!profile) {
+    console.log("⚠️ useIsEligible: Aucun profil Jambaar trouvé. Considéré comme éligible par défaut.");
+    return { isEligible: true, daysLeft: 0, nextDate: null };
+  }
 
   const nextDate = profile.nextEligibilityAt ? new Date(profile.nextEligibilityAt) : null;
+  
+  if (!nextDate) {
+    console.log("⚠️ useIsEligible: nextEligibilityAt est vide/null. Considéré comme éligible par défaut.");
+  }
+
   const isEligible = !nextDate || nextDate <= new Date();
   
   const daysLeft = !isEligible && nextDate 

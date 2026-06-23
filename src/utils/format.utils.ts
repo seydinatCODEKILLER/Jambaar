@@ -42,10 +42,14 @@ export const formatRelative = (date: string): string => {
 
 // ─── Groupe sanguin ───────────────────────────────────────────
 export const BLOOD_TYPE_LABELS: Record<string, string> = {
-  A_POS: "A+",  A_NEG: "A−",
-  B_POS: "B+",  B_NEG: "B−",
-  AB_POS: "AB+", AB_NEG: "AB−",
-  O_POS: "O+",  O_NEG: "O−",
+  A_POS: "A+",
+  A_NEG: "A−",
+  B_POS: "B+",
+  B_NEG: "B−",
+  AB_POS: "AB+",
+  AB_NEG: "AB−",
+  O_POS: "O+",
+  O_NEG: "O−",
 };
 
 export const formatBloodType = (bloodType: string): string => {
@@ -56,9 +60,9 @@ export const formatBloodType = (bloodType: string): string => {
 export const SERVICE_LABELS: Record<string, string> = {
   EMERGENCY_ROOM: "Urgences",
   OPERATING_ROOM: "Bloc opératoire",
-  MATERNITY:      "Maternité",
-  GENERAL:        "Service général",
-  PEDIATRICS:     "Pédiatrie",
+  MATERNITY: "Maternité",
+  GENERAL: "Service général",
+  PEDIATRICS: "Pédiatrie",
 };
 
 export const formatServiceUnit = (unit: string): string => {
@@ -67,4 +71,18 @@ export const formatServiceUnit = (unit: string): string => {
 
 export function isEventToday(scheduledDate: string): boolean {
   return dayjs(scheduledDate).isSame(dayjs(), "day");
+}
+
+export function maskEmail(email: string): string {
+  if (!email) return "";
+  const [local, domain] = email.split("@");
+  if (!domain) return email;
+  const visible = local.slice(0, 3);
+  return `${visible}***@${domain}`;
+}
+
+export function formatTime(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }

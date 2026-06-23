@@ -1,248 +1,44 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { useBottomTabBarHeight } from "@/src/hooks/useTabBarHeight";
 import dayjs from "dayjs";
 import "dayjs/locale/fr";
-import { useColors, useThemedStyles } from "@/src/theme/useTheme";
-import { useSmartBack } from "@/src/hooks/useSmartBack";
-import {
-  useDayDetail,
-  useRegisterDonor,
-  useCancelDonorRegistration,
-  useMyRegistrations,
-} from "@/src/hooks/useDonationDays";
-import { useIsEligible } from "@/src/hooks/useAuthStore";
+import { useColors } from "@/src/theme/useTheme";
 import { NetworkErrorScreen } from "@/src/components/ui/NetworkErrorScreen";
-import { isNetworkError } from "@/src/utils/error.utils";
+import { useDonorDayDetailScreen } from "@/src/hooks/useDonorDayDetailScreen";
+import { useDonorDayDetailStyles } from "@/src/styles/useDonorDayDetailStyles";
 
 dayjs.locale("fr");
 
-// ─── Écran Principal ──────────────────────────────────────────
 export default function DonorDayDetailScreen() {
-  const router = useRouter();
-  const { id } = useLocalSearchParams<{ id: string }>();
   const colors = useColors();
-  const tabBarHeight = useBottomTabBarHeight();
-  const { data: myRegistrationsData } = useMyRegistrations();
-
-  const hasActiveRegistration = (myRegistrationsData?.data ?? []).some(
-    (reg: any) => reg.donationDay?.id !== id, // inscrit sur une AUTRE journée
-  );
-
-  // ✅ Ajout de isError et error
-  const { data: day, isLoading, isError, error, refetch } = useDayDetail(id);
-  const { mutateAsync: register, isPending: isRegistering } =
-    useRegisterDonor();
-  const { mutateAsync: cancelReg, isPending: isCancelling } =
-    useCancelDonorRegistration();
-
-  const { isEligible, daysLeft } = useIsEligible();
-  const [isRegistered, setIsRegistered] = useState(false);
-
-  const styles = useThemedStyles((c) => ({
-    container: { flex: 1, backgroundColor: c.bg },
-    safeArea: { flex: 1 },
-    header: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: 16,
-      paddingTop: 8,
-      paddingBottom: 12,
-      gap: 12,
-    },
-    backBtn: {
-      width: 38,
-      height: 38,
-      borderRadius: 12,
-      backgroundColor: c.cardBg,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    headerTitle: { color: c.white, fontSize: 16, fontWeight: "700", flex: 1 },
-    cover: { height: 200, backgroundColor: c.red + "05" },
-    coverImage: { width: "100%", height: "100%" },
-    body: { padding: 20, gap: 20 },
-    structureRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 12,
-      backgroundColor: c.cardBg,
-      borderRadius: 14,
-      padding: 14,
-      borderWidth: 1,
-      borderColor: c.cardBorder,
-    },
-    structureIcon: {
-      width: 42,
-      height: 42,
-      borderRadius: 12,
-      backgroundColor: c.red + "12",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    structureName: { color: c.white, fontSize: 15, fontWeight: "600" },
-    structureAddress: { color: c.textMuted, fontSize: 12, marginTop: 2 },
-    title: {
-      color: c.white,
-      fontSize: 24,
-      fontWeight: "800",
-      letterSpacing: -0.5,
-      lineHeight: 30,
-    },
-    metaGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-    metaCard: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 8,
-      backgroundColor: c.cardBg,
-      borderRadius: 10,
-      paddingVertical: 10,
-      paddingHorizontal: 14,
-      borderWidth: 1,
-      borderColor: c.cardBorder,
-    },
-    metaText: { color: c.textMuted, fontSize: 13, fontWeight: "500" },
-    bloodRow: { flexDirection: "row", gap: 6, flexWrap: "wrap" },
-    pill: {
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      borderRadius: 8,
-      backgroundColor: c.red + "08",
-      borderWidth: 1,
-      borderColor: c.red + "20",
-    },
-    pillText: { color: c.red, fontSize: 11, fontWeight: "700" },
-    emptyPill: {
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      borderRadius: 8,
-      backgroundColor: c.cardBorder + "15",
-      borderWidth: 1,
-      borderColor: c.cardBorder + "25",
-    },
-    emptyPillText: { color: c.textMuted, fontSize: 11, fontWeight: "600" },
-    statsRow: { flexDirection: "row", gap: 10 },
-    statCard: {
-      flex: 1,
-      backgroundColor: c.cardBg,
-      borderRadius: 14,
-      padding: 14,
-      alignItems: "center",
-      gap: 4,
-      borderWidth: 1,
-      borderColor: c.cardBorder,
-    },
-    statValue: { fontSize: 20, fontWeight: "800", color: c.white },
-    statLabel: { fontSize: 11, color: c.textMuted, fontWeight: "500" },
-    eligibilityBanner: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 10,
-      backgroundColor: c.amber + "10",
-      borderWidth: 1.5,
-      borderColor: c.amber + "35",
-      borderRadius: 14,
-      padding: 14,
-    },
-    eligibilityText: {
-      color: c.amber,
-      fontSize: 13,
-      fontWeight: "600",
-      flex: 1,
-      lineHeight: 18,
-    },
-    description: { color: c.textMuted, fontSize: 14, lineHeight: 22 },
-    footer: {
-      position: "absolute",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      paddingHorizontal: 20,
-      paddingTop: 12,
-      paddingBottom: 10 + tabBarHeight,
-      backgroundColor: c.bg + "EE",
-    },
-    ctaBtn: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 10,
-      backgroundColor: c.red,
-      borderRadius: 16,
-      paddingVertical: 17,
-    },
-    ctaBtnDisabled: { opacity: 0.5 },
-    ctaBtnText: { color: c.white, fontSize: 16, fontWeight: "700" },
-    cancelBtn: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 8,
-      paddingVertical: 14,
-      borderRadius: 16,
-      backgroundColor: c.cardBg,
-      borderWidth: 1,
-      borderColor: c.red + "40",
-    },
-    cancelBtnText: { color: c.red, fontSize: 14, fontWeight: "600" },
-  }));
-
-  const handleRegister = async () => {
-    try {
-      await register(id);
-      setIsRegistered(true);
-    } catch (error: any) {
-      const msg =
-        error?.response?.data?.message ||
-        "Impossible de s'inscrire pour le moment.";
-      Alert.alert("Inscription impossible", msg);
-    }
-  };
-
-  const goBack = useSmartBack({
-    defaultRoute: "/(donor)/donation-days", // Par défaut, retour au Home des alertes
-    routeMap: {
-      home: "/(donor)", // Si on vient du Home
-      jambaar: "/(donor)/jambaar", // Si on vient de l'onglet Jambaar
-      registrations: "/(donor)/donation-days/my-registrations", // Si on vient de la liste de ses inscriptions
-      donationDays: "/(donor)/donation-days",
-    },
-  });
-
-  const handleCancel = async () => {
-    Alert.alert(
-      "Annuler mon inscription",
-      "Êtes-vous sûr ? Cette action est irréversible si l'événement a lieu dans moins de 24h.",
-      [
-        { text: "Non", style: "cancel" },
-        {
-          text: "Oui, annuler",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await cancelReg(id);
-              setIsRegistered(false);
-            } catch (error: any) {
-              const msg =
-                error?.response?.data?.message || "Annulation impossible.";
-              Alert.alert("Erreur", msg);
-            }
-          },
-        },
-      ],
-    );
-  };
+  const { styles } = useDonorDayDetailStyles();
+  const {
+    day,
+    isLoading,
+    hasNetworkError,
+    goBack,
+    refetch,
+    isEligible,
+    daysLeft,
+    hasActiveRegistration,
+    isRegistered,
+    isRegistering,
+    isCancelling,
+    isFull,
+    registrationsCount,
+    remainingSpots,
+    handleRegister,
+    handleCancel,
+  } = useDonorDayDetailScreen();
 
   // ── 1. Loading initial ─────────────────────────────────────────
   if (isLoading && !day) {
@@ -255,13 +51,13 @@ export default function DonorDayDetailScreen() {
     );
   }
 
-  // ── 2. Erreur réseau sans cache (Comportement hors-ligne) ──────
-  if (isError && !day && isNetworkError(error)) {
+  // ── 2. Erreur réseau sans cache ────────────────────────────────
+  if (hasNetworkError) {
     return (
       <SafeAreaView style={styles.container} edges={["top"]}>
         <View style={styles.header}>
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={goBack}
             style={styles.backBtn}
             activeOpacity={0.7}
           >
@@ -276,13 +72,13 @@ export default function DonorDayDetailScreen() {
     );
   }
 
-  // ── 3. Sécurité si données manquantes (autre erreur) ───────────
+  // ── 3. Sécurité si données manquantes ──────────────────────────
   if (!day) {
     return (
       <SafeAreaView style={styles.container} edges={["top"]}>
         <View style={styles.header}>
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={goBack}
             style={styles.backBtn}
             activeOpacity={0.7}
           >
@@ -292,28 +88,13 @@ export default function DonorDayDetailScreen() {
             Introuvable
           </Text>
         </View>
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 20,
-          }}
-        >
+        <View style={styles.errorContainer}>
           <Ionicons
             name="calendar-outline"
             size={48}
             color={colors.textMuted}
           />
-          <Text
-            style={{
-              color: colors.white,
-              fontSize: 18,
-              fontWeight: "700",
-              marginTop: 16,
-              textAlign: "center",
-            }}
-          >
+          <Text style={styles.errorTitle}>
             Cette collecte n&apos;existe pas ou a été supprimée.
           </Text>
         </View>
@@ -321,16 +102,12 @@ export default function DonorDayDetailScreen() {
     );
   }
 
-  // ── 4. Rendu normal (ou avec cache périmé si offline) ──────────
-  const registrationsCount = day._count?.registrations ?? 0;
-  const remainingSpots = Math.max(0, day.targetDonors - registrationsCount);
-  const isFull = remainingSpots === 0;
-
+  // ── 4. Rendu normal ────────────────────────────────────────────
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: tabBarHeight + 100 }}
+        contentContainerStyle={styles.scrollContent}
       >
         {/* Header */}
         <View style={styles.header}>
@@ -356,13 +133,7 @@ export default function DonorDayDetailScreen() {
               transition={300}
             />
           ) : (
-            <View
-              style={{
-                flex: 1,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
+            <View style={styles.coverPlaceholder}>
               <Ionicons
                 name="calendar-outline"
                 size={60}
@@ -451,7 +222,7 @@ export default function DonorDayDetailScreen() {
             </View>
           </View>
 
-          {/* Eligibilité Banner */}
+          {/* Bannières */}
           {!isEligible && (
             <View style={styles.eligibilityBanner}>
               <Ionicons
