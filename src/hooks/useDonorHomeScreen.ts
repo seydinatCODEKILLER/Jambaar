@@ -108,6 +108,11 @@ export function useDonorHomeScreen() {
     [router],
   );
 
+  const handleGoToEligibility = useCallback(
+    () => router.push("/(donor)/eligibility?from=home" as Href),
+    [router],
+  );
+
   return {
     user,
     isLoading,
@@ -132,5 +137,6 @@ export function useDonorHomeScreen() {
     handleAlertPress,
     handleCancelDirect,
     handleQuickConfirm,
+    handleGoToEligibility,
   };
 }

@@ -45,6 +45,7 @@ export default function DonorHomeScreen() {
     handleAlertPress,
     handleCancelDirect,
     handleQuickConfirm,
+    handleGoToEligibility,
   } = useDonorHomeScreen();
 
   // ── 1. Loading skeleton ───────────────────────────────────────
@@ -186,6 +187,34 @@ export default function DonorHomeScreen() {
                 disabled={!isEligible}
               />
             </TouchableOpacity>
+
+            {/* ── Bannière période de repos ── */}
+            {!isEligible && (
+              <TouchableOpacity
+                style={styles.restPeriodBanner}
+                onPress={handleGoToEligibility}
+                activeOpacity={0.85}
+              >
+                <Ionicons
+                  name="leaf-outline"
+                  size={20}
+                  color={colors.success}
+                />
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={styles.restPeriodTitle}>
+                    Période de repos — {daysLeft} jour{daysLeft > 1 ? "s" : ""}
+                  </Text>
+                  <Text style={styles.restPeriodSub}>
+                    Voir les conseils pour bien récupérer
+                  </Text>
+                </View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={colors.textMuted}
+                />
+              </TouchableOpacity>
+            )}
 
             {/* ── Bannières conditionnelles ── */}
             {showBanner && <BloodTypeBanner onPress={() => {}} />}

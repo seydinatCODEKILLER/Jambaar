@@ -23,6 +23,25 @@ export function useEligibilityStyles() {
     },
     headerTitle: { color: c.white, fontSize: 16, fontWeight: "700" },
 
+    countdownBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      backgroundColor: c.amber + "14",
+      borderWidth: 1,
+      borderColor: c.amber + "30",
+      borderRadius: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 14,
+      marginHorizontal: 20,
+      marginBottom: 14,
+    },
+    countdownText: {
+      color: c.amber,
+      fontSize: 12,
+      fontWeight: "600",
+    },
+
     // Hero
     heroCard: {
       marginHorizontal: 20,

@@ -92,17 +92,14 @@ export const AlertCard = ({ alert, onPress, onConfirm }: AlertCardProps) => {
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const glowAnim = useRef(new Animated.Value(0.3)).current;
 
-  // 🆕 Logique d'origine de l'alerte (CNTS vs Hôpital)
   const isCntsAlert =
     alert.origin === "CNTS_DIRECT" || alert.origin === "CNTS_ESCALATION";
 
-  // 🆕 Détermination dynamique du nom à afficher
   const displayStructureName = isCntsAlert
     ? `🩸 ${alert.healthStructure.name}`
     : alert.healthStructure.name;
 
-  // 🆕 Détermination dynamique du label du bouton
-  const ctaLabel = isCntsAlert ? "Je me rends au CNTS" : "J'y vais";
+  const ctaLabel = isCntsAlert ? "Je me rends au CNTS" : "Je sauve une vie";
 
   const styles = useThemedStyles((c) => ({
     touchable: { marginBottom: 12 },

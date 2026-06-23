@@ -95,6 +95,27 @@ export function useDonorHomeStyles() {
       flexShrink: 0,
     },
     ghostCancelText: { color: c.white, fontSize: 12, fontWeight: "700" },
+    restPeriodBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      backgroundColor: c.success + "14",
+      borderWidth: 1,
+      borderColor: c.success + "30",
+      borderRadius: 14,
+      padding: 14,
+      marginHorizontal: 20,
+      marginTop: 10,
+    },
+    restPeriodTitle: {
+      color: c.white,
+      fontSize: 13,
+      fontWeight: "700",
+    },
+    restPeriodSub: {
+      color: c.textMuted,
+      fontSize: 12,
+    },
     filtersRow: {
       flexDirection: "row",
       alignItems: "center",

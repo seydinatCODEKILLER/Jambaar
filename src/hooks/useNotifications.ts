@@ -67,7 +67,6 @@ export const useNotifications = () => {
           importance: Notifications.AndroidImportance.MAX,
           vibrationPattern: [0, 250, 250, 250],
           lightColor: "#DC1E1E",
-          sound: "default",
         });
       }
 

@@ -20,12 +20,14 @@ import {
   CONTRAINDICATIONS,
   TIPS,
 } from "@/src/constants/eligibilityData";
+import { useIsEligible } from "@/src/hooks/useAuthStore";
 
 export default function EligibilityScreen() {
   const colors = useColors();
   const tabBarHeight = useBottomTabBarHeight();
   const { handleBack, fadeAnim, slideAnim } = useEligibilityScreen();
   const { styles } = useEligibilityStyles();
+  const { isEligible, daysLeft } = useIsEligible();
 
   const SectionTitle = ({ label }: { label: string }) => (
     <Text style={styles.sectionTitle}>{label}</Text>
@@ -59,6 +61,16 @@ export default function EligibilityScreen() {
         <Animated.View
           style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}
         >
+          {/* 🆕 Bannière contextuelle si le donneur est en période de repos */}
+          {!isEligible && (
+            <View style={styles.countdownBanner}>
+              <Ionicons name="time-outline" size={16} color={colors.amber} />
+              <Text style={styles.countdownText}>
+                Vous pourrez donner à nouveau dans {daysLeft} jour
+                {daysLeft > 1 ? "s" : ""}
+              </Text>
+            </View>
+          )}
           <View style={styles.heroCard}>
             <View style={styles.heroGlow} />
             <Text style={styles.heroEmoji}>{HERO.emoji}</Text>
