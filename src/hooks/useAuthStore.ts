@@ -1,25 +1,42 @@
 import { useAuthStore } from "@/src/store/auth.store";
 import dayjs from "dayjs";
+import logger from "../utils/logger.utils";
+import { useEffect, useState } from "react";
+
+const RECHECK_INTERVAL_MS = 60_000;
 
 export const useIsEligible = () => {
   const profile = useAuthStore((state) => state.user?.jambaarsProfile);
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), RECHECK_INTERVAL_MS);
+    return () => clearInterval(interval);
+  }, []);
 
   if (!profile) {
-    console.log("⚠️ useIsEligible: Aucun profil Jambaar trouvé. Considéré comme éligible par défaut.");
+    logger.warn(
+      "useIsEligible: Aucun profil Jambaar trouvé. Considéré comme éligible par défaut.",
+    );
     return { isEligible: true, daysLeft: 0, nextDate: null };
   }
 
-  const nextDate = profile.nextEligibilityAt ? new Date(profile.nextEligibilityAt) : null;
-  
+  const nextDate = profile.nextEligibilityAt
+    ? new Date(profile.nextEligibilityAt)
+    : null;
+
   if (!nextDate) {
-    console.log("⚠️ useIsEligible: nextEligibilityAt est vide/null. Considéré comme éligible par défaut.");
+    logger.warn(
+      "useIsEligible: nextEligibilityAt est vide/null. Considéré comme éligible par défaut.",
+    );
   }
 
-  const isEligible = !nextDate || nextDate <= new Date();
-  
-  const daysLeft = !isEligible && nextDate 
-    ? dayjs(nextDate).diff(dayjs(), "day") 
-    : 0;
+  const isEligible = !nextDate || nextDate <= now;
+
+  const daysLeft =
+    !isEligible && nextDate
+      ? Math.max(0, dayjs(nextDate).diff(dayjs(now), "day"))
+      : 0;
 
   return { isEligible, daysLeft, nextDate };
 };

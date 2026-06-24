@@ -10,5 +10,5 @@ export function useBottomTabBarHeight() {
     default: 8,
   }) ?? 8;
 
-  return 64 + safeBottom; // ← correspond exactement au layout
+  return 64 + safeBottom;
 }

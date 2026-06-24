@@ -27,7 +27,7 @@ export function useDonorHomeScreen() {
     error,
     refetch,
     isRefetching,
-  } = useNearbyAlerts();
+  } = useNearbyAlerts(isEligible);
   const { mutate: toggleAvailability, isPending: isTogglingAvail } =
     useUpdateAvailability();
   const { data: activeEngagement } = useActiveEngagement();
@@ -130,6 +130,7 @@ export function useDonorHomeScreen() {
     displayedEngagement,
     isLocalExpired,
     activeEngagement,
+    hasAlertsData: alerts !== undefined,
     alerts: filteredAlerts,
     vitalCount,
     totalAlerts: alerts?.length ?? 0,

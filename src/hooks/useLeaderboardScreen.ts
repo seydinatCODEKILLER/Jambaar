@@ -41,14 +41,9 @@ export function useLeaderboardScreen() {
   } = useLeaderboard(queryParams);
 
   // Aplatissement des pages (infinite scroll)
-  const leaderboard: any[] =
-    (data as any)?.pages?.flatMap((p: any) => p.leaderboard) ??
-    (data as any)?.leaderboard ??
-    [];
-  const myRank =
-    (data as any)?.pages?.[0]?.myRank ?? (data as any)?.myRank ?? null;
-  const scopeLabel =
-    (data as any)?.pages?.[0]?.scope ?? (data as any)?.scope ?? "Global";
+  const leaderboard = data?.pages.flatMap((p) => p.leaderboard) ?? [];
+  const myRank = data?.pages[0]?.myRank ?? null;
+  const scopeLabel = data?.pages[0]?.scope ?? "Global";
 
   const hasNetworkError = isError && isNetworkError(error);
 

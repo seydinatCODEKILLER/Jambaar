@@ -11,15 +11,18 @@ import { NetworkErrorScreen } from "@/src/components/ui/NetworkErrorScreen";
 import { SkeletonCard } from "@/src/components/donor/SkeletonCard";
 import { AlertsStats } from "@/src/components/donor/AlertsStats";
 import { EngagementBanner } from "@/src/components/donor/EngagementBanner";
+import { RecoveryScreen } from "@/src/components/donor/RecoveryScreen";
 
 import { useDonorHomeScreen } from "@/src/hooks/useDonorHomeScreen";
 import { useDonorHomeStyles } from "@/src/styles/useDonorHomeStyles";
 import { FILTERS } from "@/src/constants/donorHomeConfig";
 import { BloodTypeBanner } from "@/src/components/donor/BloodTypeBanner";
+import { useBottomTabBarHeight } from "@/src/hooks/useTabBarHeight";
 
 export default function DonorHomeScreen() {
   const colors = useColors();
-  const { styles } = useDonorHomeStyles();
+  const tabBarHeight = useBottomTabBarHeight();
+  const { styles } = useDonorHomeStyles(tabBarHeight);
 
   const {
     user,
@@ -38,6 +41,7 @@ export default function DonorHomeScreen() {
     displayedEngagement,
     isLocalExpired,
     activeEngagement,
+    hasAlertsData,
     alerts,
     vitalCount,
     totalAlerts,
@@ -46,10 +50,10 @@ export default function DonorHomeScreen() {
     handleCancelDirect,
     handleQuickConfirm,
     handleGoToEligibility,
-  } = useDonorHomeScreen();
+  } = useDonorHomeScreen();  
 
   // ── 1. Loading skeleton ───────────────────────────────────────
-  if (isLoading && !alerts) {
+  if (isLoading && !hasAlertsData) {
     return (
       <SafeAreaView style={styles.container} edges={["top"]}>
         <View style={styles.header}>
@@ -63,14 +67,14 @@ export default function DonorHomeScreen() {
         <View style={styles.listContent}>
           {[1, 2, 3].map((i) => (
             <SkeletonCard key={i} />
-          ))}{" "}
+          ))}
         </View>
       </SafeAreaView>
     );
   }
 
   // ── 2. Erreur réseau sans cache ───────────────────────────────
-  if (isError && !alerts && isNetworkError(error)) {
+  if (isError && !hasAlertsData && isNetworkError(error)) {
     return (
       <SafeAreaView style={styles.container} edges={["top"]}>
         <View style={styles.header}>
@@ -93,7 +97,50 @@ export default function DonorHomeScreen() {
     );
   }
 
-  // ── 3. Rendu normal ───────────────────────────────────────────
+  // ── 3. Mode récupération — donneur inéligible 🆕 ─────────────
+  if (!isEligible) {
+    return (
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        {/* Header identique mais titre adapté */}
+        <View style={styles.header}>
+          <View style={{ gap: 3 }}>
+            <Text style={styles.greeting}>Bonjour {user?.firstName} 👋</Text>
+            <Text style={styles.headerTitle}>
+              Votre <Text style={{ color: "#534AB7" }}>récupération</Text>
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.bellBtn} activeOpacity={0.7}>
+            <Ionicons
+              name="notifications-outline"
+              size={21}
+              color={colors.white}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* FlatList pour avoir le pull-to-refresh sur le contenu statique aussi */}
+        <FlatList
+          data={[]}
+          keyExtractor={() => ""}
+          renderItem={null}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          onRefresh={refetch}
+          refreshing={isRefetching}
+          ListHeaderComponent={
+            <RecoveryScreen
+              daysLeft={daysLeft ?? 0}
+              firstName={user?.firstName}
+              onGoToEligibility={handleGoToEligibility}
+            />
+          }
+          ListEmptyComponent={null}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  // ── 4. Rendu normal (donneur éligible) ────────────────────────
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <FlatList
@@ -138,83 +185,41 @@ export default function DonorHomeScreen() {
 
             {/* ── Disponibilité ── */}
             <TouchableOpacity
-              activeOpacity={isEligible ? 0.85 : 1}
+              activeOpacity={0.85}
               style={[
                 styles.availRow,
-                !isEligible
-                  ? styles.availRowOff
-                  : user?.isAvailable
-                    ? styles.availRowOn
-                    : styles.availRowOff,
-                !isEligible && { opacity: 0.55 },
+                user?.isAvailable ? styles.availRowOn : styles.availRowOff,
               ]}
-              onPress={() =>
-                isEligible && toggleAvailability(!user?.isAvailable)
-              }
-              disabled={isTogglingAvail || !isEligible}
+              onPress={() => toggleAvailability(!user?.isAvailable)}
+              disabled={isTogglingAvail}
             >
               <View style={styles.availLeft}>
                 <View
                   style={[
                     styles.availDot,
-                    isEligible && user?.isAvailable
-                      ? styles.availDotOn
-                      : styles.availDotOff,
+                    user?.isAvailable ? styles.availDotOn : styles.availDotOff,
                   ]}
                 />
                 <View>
                   <Text style={styles.availTitle}>
-                    {!isEligible
-                      ? "Période de repos"
-                      : user?.isAvailable
-                        ? "Disponible pour donner"
-                        : "Non disponible"}
+                    {user?.isAvailable
+                      ? "Disponible pour donner"
+                      : "Non disponible"}
                   </Text>
                   <Text style={styles.availSub}>
-                    {!isEligible
-                      ? `Éligible dans ${daysLeft} jour${daysLeft > 1 ? "s" : ""}`
-                      : user?.isAvailable
-                        ? "Vous recevez les alertes push"
-                        : "Les alertes sont suspendues"}
+                    {user?.isAvailable
+                      ? "Vous recevez les alertes push"
+                      : "Les alertes sont suspendues"}
                   </Text>
                 </View>
               </View>
               <Switch
                 trackColor={{ false: colors.cardBorder, true: colors.success }}
                 thumbColor={colors.cardBg}
-                value={isEligible && (user?.isAvailable ?? true)}
+                value={user?.isAvailable ?? true}
                 onValueChange={(val) => toggleAvailability(val)}
-                disabled={!isEligible}
               />
             </TouchableOpacity>
-
-            {/* ── Bannière période de repos ── */}
-            {!isEligible && (
-              <TouchableOpacity
-                style={styles.restPeriodBanner}
-                onPress={handleGoToEligibility}
-                activeOpacity={0.85}
-              >
-                <Ionicons
-                  name="leaf-outline"
-                  size={20}
-                  color={colors.success}
-                />
-                <View style={{ flex: 1, gap: 2 }}>
-                  <Text style={styles.restPeriodTitle}>
-                    Période de repos — {daysLeft} jour{daysLeft > 1 ? "s" : ""}
-                  </Text>
-                  <Text style={styles.restPeriodSub}>
-                    Voir les conseils pour bien récupérer
-                  </Text>
-                </View>
-                <Ionicons
-                  name="chevron-forward"
-                  size={18}
-                  color={colors.textMuted}
-                />
-              </TouchableOpacity>
-            )}
 
             {/* ── Bannières conditionnelles ── */}
             {showBanner && <BloodTypeBanner onPress={() => {}} />}

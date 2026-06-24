@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, Text, Animated, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useColors, useThemedStyles } from "@/src/theme/useTheme";
@@ -20,9 +20,12 @@ export function BadgeCard({ badge, index }: BadgeCardProps) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.92)).current;
 
+  const [imageFailed, setImageFailed] = useState(false);
+
   const isUnlocked = badge.isUnlocked;
   const isNew = isNewBadge(badge);
-  const badgeEmoji = badge.iconUrl ? null : getDefaultEmoji(badge);
+  const showEmoji = !badge.iconUrl || imageFailed;
+  const badgeEmoji = showEmoji ? getDefaultEmoji(badge) : null;
 
   useEffect(() => {
     Animated.parallel([
@@ -193,23 +196,25 @@ export function BadgeCard({ badge, index }: BadgeCardProps) {
         ]}
       >
         {isUnlocked ? (
-          badge.iconUrl ? (
+          !showEmoji ? (
             <Image
-              source={{ uri: badge.iconUrl }}
+              source={{ uri: badge.iconUrl! }}
               style={styles.badgeImage}
               resizeMode="contain"
+              onError={() => setImageFailed(true)}
             />
           ) : (
             <Text style={[styles.badgeEmoji, isNew && { fontSize: 28 }]}>
               {badgeEmoji}
             </Text>
           )
-        ) : badge.iconUrl ? (
+        ) : badge.iconUrl && !imageFailed ? (
           <View style={styles.lockedImageContainer}>
             <Image
               source={{ uri: badge.iconUrl }}
               style={[styles.badgeImage, styles.badgeImageLocked]}
               resizeMode="contain"
+              onError={() => setImageFailed(true)}
             />
             <View style={styles.lockOverlay}>
               <Ionicons name="lock-closed" size={12} color={colors.white} />

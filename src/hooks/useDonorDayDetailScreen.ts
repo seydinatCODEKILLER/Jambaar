@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Alert } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -10,6 +9,7 @@ import {
 import { useIsEligible } from "@/src/hooks/useAuthStore";
 import { useSmartBack } from "@/src/hooks/useSmartBack";
 import { isNetworkError } from "@/src/utils/error.utils";
+import { RegistrationStatusEnum } from "@/src/types/donation-day.types";
 
 export function useDonorDayDetailScreen() {
   const router = useRouter();
@@ -17,7 +17,7 @@ export function useDonorDayDetailScreen() {
   const { data: myRegistrationsData } = useMyRegistrations();
 
   const hasActiveRegistration = (myRegistrationsData?.data ?? []).some(
-    (reg: any) => reg.donationDay?.id !== id,
+    (reg) => reg.donationDay.id !== id,
   );
 
   const { data: day, isLoading, isError, error, refetch } = useDayDetail(id);
@@ -27,7 +27,12 @@ export function useDonorDayDetailScreen() {
     useCancelDonorRegistration();
 
   const { isEligible, daysLeft } = useIsEligible();
-  const [isRegistered, setIsRegistered] = useState(false);
+
+  const isRegistered =
+    day?.myRegistrationStatus === RegistrationStatusEnum.REGISTERED;
+
+  const hasCancelledThisDay =
+    day?.myRegistrationStatus === RegistrationStatusEnum.CANCELLED;
 
   const goBack = useSmartBack({
     defaultRoute: "/(donor)/donation-days",
@@ -43,7 +48,6 @@ export function useDonorDayDetailScreen() {
   const handleRegister = async () => {
     try {
       await register(id);
-      setIsRegistered(true);
     } catch (error: any) {
       const msg =
         error?.response?.data?.message ||
@@ -64,7 +68,6 @@ export function useDonorDayDetailScreen() {
           onPress: async () => {
             try {
               await cancelReg(id);
-              setIsRegistered(false);
             } catch (error: any) {
               const msg =
                 error?.response?.data?.message || "Annulation impossible.";
@@ -97,6 +100,7 @@ export function useDonorDayDetailScreen() {
     daysLeft,
     hasActiveRegistration,
     isRegistered,
+    hasCancelledThisDay,
     isRegistering,
     isCancelling,
     isFull,

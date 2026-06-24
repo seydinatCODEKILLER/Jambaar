@@ -7,7 +7,7 @@ import { useUserRole } from "./useAuthStore";
 import { useAlertStore } from "../store/alerts.store";
 
 // ── GET alertes autour du donneur ─────────────────────────────
-export const useNearbyAlerts = () => {
+export const useNearbyAlerts = (enabled: boolean = true) => {
   const user = useAuthStore((s) => s.user);
   const setAlerts = useAlertStore((s) => s.setAlerts);
 
@@ -25,7 +25,7 @@ export const useNearbyAlerts = () => {
     },
     refetchInterval: 30_000,
     staleTime: 15_000,
-    enabled: hasCoordinates,
+    enabled: hasCoordinates && enabled,
     meta: { silent: true },
   });
 };

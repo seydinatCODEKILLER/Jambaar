@@ -3,6 +3,8 @@ import {
   DonationDay,
   ListDaysFilters,
   DayListResponse,
+  MyRegistrationsResponse,
+  DayRegistration,
 } from "../types/donation-day.types";
 
 export const donationDaysApi = {
@@ -30,13 +32,16 @@ export const donationDaysApi = {
   },
 
   // ── GET /donation-days/my-registrations (Donneur) ────────
+  // 🆕 Typage explicite (DayRegistration) au lieu de any[] — la forme exacte
+  // est désormais documentée dans donation-day.types.ts plutôt que reposer
+  // sur un commentaire non vérifié par le compilateur.
   getMyRegistrations: async (
     filters?: ListDaysFilters,
-  ): Promise<DayListResponse> => {
+  ): Promise<MyRegistrationsResponse> => {
     const { data } = await api.get<{
       success: boolean;
-      data: any[]; // Le type exact est DayRegistration avec DonationDay inclus
-      pagination: DayListResponse["pagination"];
+      data: DayRegistration[];
+      pagination: MyRegistrationsResponse["pagination"];
     }>("/donation-days/my-registrations", { params: filters });
 
     return { data: data.data, pagination: data.pagination };

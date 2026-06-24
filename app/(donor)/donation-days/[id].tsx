@@ -31,6 +31,7 @@ export default function DonorDayDetailScreen() {
     daysLeft,
     hasActiveRegistration,
     isRegistered,
+    hasCancelledThisDay,
     isRegistering,
     isCancelling,
     isFull,
@@ -277,6 +278,18 @@ export default function DonorDayDetailScreen() {
               </>
             )}
           </TouchableOpacity>
+        ) : hasCancelledThisDay ? (
+          <View style={[styles.ctaBtn, styles.ctaBtnDisabled]}>
+            <Ionicons
+              name="lock-closed-outline"
+              size={18}
+              color={colors.textMuted}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={styles.ctaBtnText}>
+              Inscription non disponible — vous avez annulé votre venue
+            </Text>
+          </View>
         ) : (
           <TouchableOpacity
             style={[

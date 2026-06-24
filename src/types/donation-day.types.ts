@@ -42,11 +42,20 @@ export interface DonationDay {
   healthStructure: { id: string; name: string };
   _count?: { registrations: number };
   remainingSpots?: number;
+  myRegistrationStatus?: RegistrationStatus | null;
+}
+export interface DayRegistration {
+  id: string;
+  status: RegistrationStatus;
+  timeSlot?: string | null;
+  registeredAt: string;
+  donationDay: DonationDay;
 }
 
 // ─── Réponses API spécifiques ────────────────────────────────
 
 export type DayListResponse = PaginatedResponse<DonationDay>;
+export type MyRegistrationsResponse = PaginatedResponse<DayRegistration>;
 
 // ─── Payloads (Requêtes) ────────────────────────────────────
 

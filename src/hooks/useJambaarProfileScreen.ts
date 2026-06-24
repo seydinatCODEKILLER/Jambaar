@@ -6,6 +6,7 @@ import dayjs from "dayjs";
 import { useJambaarProfile } from "@/src/hooks/useJambaar";
 import { isNetworkError } from "@/src/utils/error.utils";
 import { GRADE_CONFIG } from "@/src/constants/jambaarConfig";
+import { useIsEligible } from "./useAuthStore";
 
 export function useJambaarProfileScreen() {
   const router = useRouter();
@@ -47,13 +48,7 @@ export function useJambaarProfileScreen() {
     ? GRADE_CONFIG[progression.nextGrade]
     : null;
 
-  const isEligible =
-    !profile?.nextEligibilityAt ||
-    new Date(profile.nextEligibilityAt) <= new Date();
-  const daysUntilEligible =
-    !isEligible && profile
-      ? dayjs(profile.nextEligibilityAt).diff(dayjs(), "day")
-      : 0;
+  const { isEligible, daysLeft: daysUntilEligible } = useIsEligible();
 
   // ── Actions ──
   const tap = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

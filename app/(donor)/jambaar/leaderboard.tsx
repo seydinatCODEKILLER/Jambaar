@@ -172,7 +172,7 @@ export default function LeaderboardScreen() {
       <View style={styles.haloTop} />
       <FlatList
         data={listData}
-        keyExtractor={(item, i) => `${item.user.id}-${i}`}
+        keyExtractor={(item) => item.user.id}
         renderItem={({ item, index }) => (
           <LeaderboardRow
             item={item}

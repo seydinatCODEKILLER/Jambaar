@@ -1,12 +1,11 @@
-import { Platform } from "react-native";
 import { useThemedStyles } from "@/src/theme/useTheme";
 
-export function useDonorHomeStyles() {
+export function useDonorHomeStyles(tabBarHeight: number = 72) {
   const styles = useThemedStyles((c) => ({
     container: { flex: 1, backgroundColor: c.bg },
     listContent: {
       paddingHorizontal: 20,
-      paddingBottom: Platform.OS === "ios" ? 100 : 80,
+      paddingBottom: 20 + tabBarHeight,
     },
     header: {
       flexDirection: "row",
