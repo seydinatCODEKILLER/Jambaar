@@ -15,15 +15,17 @@ interface DonorDayCardProps {
 }
 
 export function DonorDayCard({ item, onPress }: DonorDayCardProps) {
-  const colors = useColors(); // ← Autonome
+  const colors = useColors();
 
   const registrationsCount = item._count?.registrations ?? 0;
+
+  const remainingSpots = item.remainingSpots ?? 0;
+  const isFull = remainingSpots === 0;
+
   const pct =
     item.targetDonors > 0
       ? Math.min((registrationsCount / item.targetDonors) * 100, 100)
       : 0;
-  const remainingSpots = Math.max(0, item.targetDonors - registrationsCount);
-  const isFull = remainingSpots === 0;
 
   const styles = useThemedStyles((c) => ({
     card: {

@@ -15,6 +15,7 @@ export default function AuthLayout() {
       <Stack.Screen name="register-donor" />
       <Stack.Screen name="otp-verify" />
       <Stack.Screen name="reconnect-donor" />
+      <Stack.Screen name="success" />
     </Stack>
   );
 }

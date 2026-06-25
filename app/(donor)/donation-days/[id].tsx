@@ -1,4 +1,3 @@
-import React from "react";
 import {
   View,
   Text,
@@ -13,6 +12,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/fr";
 import { useColors } from "@/src/theme/useTheme";
 import { NetworkErrorScreen } from "@/src/components/ui/NetworkErrorScreen";
+import { DonorDayDetailSkeleton } from "@/src/components/donations-days/DonorDayDetailSkeleton"; // 🆕
 import { useDonorDayDetailScreen } from "@/src/hooks/useDonorDayDetailScreen";
 import { useDonorDayDetailStyles } from "@/src/styles/useDonorDayDetailStyles";
 
@@ -39,15 +39,30 @@ export default function DonorDayDetailScreen() {
     remainingSpots,
     handleRegister,
     handleCancel,
-  } = useDonorDayDetailScreen();
+  } = useDonorDayDetailScreen();  
 
-  // ── 1. Loading initial ─────────────────────────────────────────
+  // ── Header partagé ─────────────────────────────────────────────
+  const renderHeader = (title = "Détail de la collecte") => (
+    <View style={styles.header}>
+      <TouchableOpacity
+        onPress={goBack}
+        style={styles.backBtn}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="arrow-back" size={18} color={colors.white} />
+      </TouchableOpacity>
+      <Text style={styles.headerTitle} numberOfLines={1}>
+        {title}
+      </Text>
+    </View>
+  );
+
+  // ── 1. Loading skeleton 🆕 ─────────────────────────────────────
   if (isLoading && !day) {
     return (
       <SafeAreaView style={styles.container} edges={["top"]}>
-        <View style={[styles.header, { justifyContent: "center" }]}>
-          <ActivityIndicator color={colors.red} size="large" />
-        </View>
+        {renderHeader()}
+        <DonorDayDetailSkeleton />
       </SafeAreaView>
     );
   }
@@ -56,18 +71,7 @@ export default function DonorDayDetailScreen() {
   if (hasNetworkError) {
     return (
       <SafeAreaView style={styles.container} edges={["top"]}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={goBack}
-            style={styles.backBtn}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="arrow-back" size={18} color={colors.white} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            Détail de la collecte
-          </Text>
-        </View>
+        {renderHeader()}
         <NetworkErrorScreen onRetry={refetch} />
       </SafeAreaView>
     );
@@ -77,18 +81,7 @@ export default function DonorDayDetailScreen() {
   if (!day) {
     return (
       <SafeAreaView style={styles.container} edges={["top"]}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={goBack}
-            style={styles.backBtn}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="arrow-back" size={18} color={colors.white} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            Introuvable
-          </Text>
-        </View>
+        {renderHeader("Introuvable")}
         <View style={styles.errorContainer}>
           <Ionicons
             name="calendar-outline"
@@ -110,19 +103,7 @@ export default function DonorDayDetailScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={goBack}
-            style={styles.backBtn}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="arrow-back" size={18} color={colors.white} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            Détail de la collecte
-          </Text>
-        </View>
+        {renderHeader()}
 
         {/* Cover */}
         <View style={styles.cover}>
@@ -287,7 +268,7 @@ export default function DonorDayDetailScreen() {
               style={{ marginRight: 6 }}
             />
             <Text style={styles.ctaBtnText}>
-              Inscription non disponible — vous avez annulé votre venue
+              Vous avez deja annulé votre venue
             </Text>
           </View>
         ) : (

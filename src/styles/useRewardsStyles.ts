@@ -1,12 +1,14 @@
-import { Platform } from "react-native";
 import { useThemedStyles } from "@/src/theme/useTheme";
+import { useBottomTabBarHeight } from "../hooks/useTabBarHeight";
 
 export function useRewardsStyles() {
+  const tabBarHeight = useBottomTabBarHeight();
+
   const styles = useThemedStyles((c) => ({
     container: { flex: 1, backgroundColor: c.bg },
     listContent: {
       paddingHorizontal: 20,
-      paddingBottom: Platform.OS === "ios" ? 120 : 90,
+      paddingBottom: 16 + tabBarHeight,
     },
     topHalo: {
       position: "absolute",

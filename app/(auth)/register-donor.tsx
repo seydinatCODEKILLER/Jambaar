@@ -801,7 +801,7 @@ export default function RegisterDonorScreen() {
     </View>
   );
 
-  // ── Step 3 : Profil médical ── ✅ CORRECTION APPLIQUÉE ICI
+  // ── Step 3 : Profil médical
   const renderStep3 = () => (
     <View style={styles.stepContent}>
       {/* Section groupe sanguin */}

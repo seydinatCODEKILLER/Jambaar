@@ -1,4 +1,3 @@
-import React from "react";
 import { View, Text, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -62,12 +61,12 @@ export default function DonorDonationDaysScreen() {
       <FlatList
         data={days}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent} // ← Propre et centralisé
+        contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         onRefresh={refetch}
         refreshing={isRefetching}
         renderItem={({ item }) => (
-          <DonorDayCard item={item} onPress={() => handlePressCard(item.id)} /> // ← Plus de props colors
+          <DonorDayCard item={item} onPress={() => handlePressCard(item.id)} />
         )}
         ListEmptyComponent={
           <View style={styles.emptyWrap}>

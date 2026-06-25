@@ -1,4 +1,3 @@
-import React from "react";
 import {
   View,
   Text,
@@ -33,8 +32,8 @@ export default function ProfileScreen() {
     gradeConfig,
     bloodLabel,
   } = useProfileScreen();
-
   const { styles } = useProfileStyles();
+
   const editRoute = "/(donor)/profile/edit?from=profile" as Href;
 
   return (

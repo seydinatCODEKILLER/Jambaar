@@ -1,7 +1,10 @@
 import { Platform } from "react-native";
 import { useThemedStyles } from "@/src/theme/useTheme";
+import { useBottomTabBarHeight } from "../hooks/useTabBarHeight";
 
 export function useSettingsStyles() {
+  const tabBarHeight = useBottomTabBarHeight();
+
   const styles = useThemedStyles((c) => ({
     container: { flex: 1, backgroundColor: c.bg },
     haloTop: {
@@ -41,7 +44,7 @@ export function useSettingsStyles() {
     scroll: { flex: 1 },
     scrollContent: {
       paddingHorizontal: 20,
-      paddingBottom: Platform.OS === "ios" ? 100 : 80,
+      paddingBottom: 16 + tabBarHeight,
     },
     sectionTitle: {
       color: c.textSubtle,

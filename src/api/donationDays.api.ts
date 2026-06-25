@@ -32,9 +32,6 @@ export const donationDaysApi = {
   },
 
   // ── GET /donation-days/my-registrations (Donneur) ────────
-  // 🆕 Typage explicite (DayRegistration) au lieu de any[] — la forme exacte
-  // est désormais documentée dans donation-day.types.ts plutôt que reposer
-  // sur un commentaire non vérifié par le compilateur.
   getMyRegistrations: async (
     filters?: ListDaysFilters,
   ): Promise<MyRegistrationsResponse> => {

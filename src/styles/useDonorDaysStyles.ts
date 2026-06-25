@@ -28,7 +28,7 @@ export function useDonorDaysStyles() {
     listContent: {
       paddingHorizontal: 20,
       paddingTop: 4,
-      paddingBottom: tabBarHeight + 40,
+      paddingBottom: tabBarHeight + 20,
     }, // ← Intégré
     emptyWrap: {
       alignItems: "center",

@@ -1,12 +1,14 @@
-import { Platform } from "react-native";
 import { useThemedStyles } from "@/src/theme/useTheme";
+import { useBottomTabBarHeight } from "../hooks/useTabBarHeight";
 
 export function useProfileStyles() {
+  const tabBarHeight = useBottomTabBarHeight();
+
   const styles = useThemedStyles((c) => ({
     container: { flex: 1, backgroundColor: c.bg },
     scrollContent: {
       paddingHorizontal: 20,
-      paddingBottom: Platform.OS === "ios" ? 120 : 90,
+      paddingBottom: 16 + tabBarHeight,
     },
     header: {
       flexDirection: "row",

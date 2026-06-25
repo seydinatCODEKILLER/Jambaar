@@ -82,9 +82,8 @@ export function useDonorDayDetailScreen() {
   // ── Dérivés ──
   const hasNetworkError = isError && !day && isNetworkError(error);
   const registrationsCount = day?._count?.registrations ?? 0;
-  const remainingSpots = day
-    ? Math.max(0, day.targetDonors - registrationsCount)
-    : 0;
+  const remainingSpots = day?.remainingSpots ?? 0;
+
   const isFull = remainingSpots === 0;
 
   return {

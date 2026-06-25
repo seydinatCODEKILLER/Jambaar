@@ -17,7 +17,7 @@ interface RecoveryScreenProps {
 }
 
 // ─── Constantes ───────────────────────────────────────────────
-const TOTAL_REST_DAYS = 56; // 8 semaines standard entre deux dons
+const TOTAL_REST_DAYS = 56;
 
 const PURPLE = {
   accent: "#7F77DD",
