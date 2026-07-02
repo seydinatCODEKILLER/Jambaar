@@ -12,7 +12,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/fr";
 import { useColors } from "@/src/theme/useTheme";
 import { NetworkErrorScreen } from "@/src/components/ui/NetworkErrorScreen";
-import { DonorDayDetailSkeleton } from "@/src/components/donations-days/DonorDayDetailSkeleton"; // 🆕
+import { DonorDayDetailSkeleton } from "@/src/components/donations-days/DonorDayDetailSkeleton";
 import { useDonorDayDetailScreen } from "@/src/hooks/useDonorDayDetailScreen";
 import { useDonorDayDetailStyles } from "@/src/styles/useDonorDayDetailStyles";
 

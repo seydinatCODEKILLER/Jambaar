@@ -9,6 +9,7 @@ import {
   EXPECTED_401_ENDPOINTS,
 } from "@/src/config/api.config";
 import { tokenManager } from "@/src/utils/token.utils";
+import { refreshAccessToken } from "@/src/utils/refreshToken.util";
 
 // ─────────────────────────────────────────────────────────────
 // Instance Axios
@@ -40,7 +41,6 @@ apiClient.interceptors.request.use(
       retryCount: (config as any).metadata?.retryCount ?? 0,
     };
 
-    // Log en mode dev seulement
     if (__DEV__) {
       console.log(`📤 ${config.method?.toUpperCase()} ${url}`);
     }
@@ -103,43 +103,12 @@ apiClient.interceptors.response.use(
         });
       }
 
-      tokenManager.isRefreshing = true;
-
       try {
-        const refreshToken = await tokenManager.getRefreshToken();
-
-        if (!refreshToken) {
-          throw new Error("Pas de refresh token disponible");
-        }
-
-        console.log("🔄 Tentative de rotation du refresh token...");
-
-        // ⚠️ CHANGEMENT ICI : Structure de réponse Vita-Link
-        const response = await apiClient.post("/auth/refresh", {
-          refreshToken,
-        });
-
-        // Ton backend renvoie directement { success: true, accessToken, refreshToken }
-        const newAccessToken: string = response.data.accessToken;
-        const newRefreshToken: string = response.data.refreshToken;
-
-        await tokenManager.saveTokens(newAccessToken, newRefreshToken);
-
-        console.log("✅ Tokens rotatés et sauvegardés");
-
-        tokenManager.onTokenRefreshed(newAccessToken);
+        const newAccessToken = await refreshAccessToken();
         originalConfig.headers.Authorization = `Bearer ${newAccessToken}`;
         return apiClient(originalConfig);
       } catch (refreshError) {
-        console.error("❌ Rotation du refresh token échouée:", refreshError);
-        tokenManager.onRefreshFailed();
-        await tokenManager.clearTokens();
-
-        // Déclenche la déconnexion globale (qui redirigera vers /auth)
-        tokenManager.logout("Session expirée. Veuillez vous reconnecter.");
         return Promise.reject(refreshError);
-      } finally {
-        tokenManager.isRefreshing = false;
       }
     }
 

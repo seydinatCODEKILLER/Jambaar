@@ -7,11 +7,13 @@ import { useAuthStore } from "@/src/store/auth.store";
 import { useLocation } from "@/src/hooks/useLocation";
 import { useSmartBack } from "@/src/hooks/useSmartBack";
 import { usersApi } from "@/src/api/users.api";
+import { useIsEligible } from "@/src/hooks/useAuthStore";
 
 export function useSettingsScreen() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const { requestAndSync: syncLocation } = useLocation();
+  const { isEligible, daysLeft } = useIsEligible();
 
   const [pushEnabled, setPushEnabled] = useState(false);
   const [isCheckingPush, setIsCheckingPush] = useState(true);
@@ -56,6 +58,15 @@ export function useSettingsScreen() {
   }, []);
 
   const handleTogglePush = async (value: boolean) => {
+    if (value && !isEligible) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      Alert.alert(
+        "Période de repos",
+        `Vous ne pouvez pas activer les alertes pour le moment. Vous êtes éligible dans ${daysLeft} jour${daysLeft > 1 ? "s" : ""}.`,
+      );
+      return;
+    }
+
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (value) {
       const { status } = await Notifications.requestPermissionsAsync();
@@ -157,6 +168,8 @@ export function useSettingsScreen() {
     pushEnabled,
     isCheckingPush,
     isSyncingLocation,
+    isEligible,
+    daysLeft,
     isDeleting,
     fadeAnim,
     slideAnim,

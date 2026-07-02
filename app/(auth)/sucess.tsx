@@ -40,7 +40,7 @@ export default function SuccessScreen() {
     "idle",
   );
 
-  const irisDiameter = useRef(new Animated.Value(0)).current; // 0 -> 2*MAX_RADIUS
+  const irisDiameter = useRef(new Animated.Value(0)).current;
   const irisOpacity = useRef(new Animated.Value(1)).current;
   const idleFade = useRef(new Animated.Value(1)).current;
   const successFade = useRef(new Animated.Value(0)).current;
@@ -171,8 +171,6 @@ export default function SuccessScreen() {
     },
   }));
 
-  // Légère pulsation autour de l'empreinte tant qu'on attend le tap,
-  // pour inviter l'utilisateur à toucher.
   React.useEffect(() => {
     if (phase !== "idle") return;
 

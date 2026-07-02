@@ -29,7 +29,6 @@ export default function OtpVerifyScreen() {
   const theme = useThemeStore((s) => s.theme);
   const styles = useOtpVerifyStyles();
 
-  // Récupération de toute la logique via le hook
   const {
     code,
     updateCode,

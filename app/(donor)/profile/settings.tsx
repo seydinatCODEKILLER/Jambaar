@@ -31,6 +31,8 @@ export default function SettingsScreen() {
     isCheckingPush,
     isSyncingLocation,
     isDeleting,
+    isEligible,
+    daysLeft,
     fadeAnim,
     slideAnim,
     handleTogglePush,
@@ -88,7 +90,7 @@ export default function SettingsScreen() {
 
           {/* ── Notifications ── */}
           <Text style={styles.sectionTitle}>NOTIFICATIONS</Text>
-          <View style={styles.card}>
+          <View style={[styles.card, !isEligible && { opacity: 0.55 }]}>
             <View style={styles.pushRow}>
               <View
                 style={{
@@ -97,9 +99,11 @@ export default function SettingsScreen() {
                   borderRadius: 10,
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: pushEnabled
-                    ? pushColor + "15"
-                    : colors.cardBorder,
+                  backgroundColor: !isEligible
+                    ? colors.cardBorder
+                    : pushEnabled
+                      ? pushColor + "15"
+                      : colors.cardBorder,
                 }}
               >
                 <Ionicons
@@ -119,7 +123,11 @@ export default function SettingsScreen() {
                   Notifications push
                 </Text>
                 <Text style={{ color: colors.textMuted, fontSize: 11 }}>
-                  {pushEnabled ? "Activées" : "Désactivées"}
+                  {!isEligible
+                    ? `Indisponible (${daysLeft}j restants)`
+                    : pushEnabled
+                      ? "Activées"
+                      : "Désactivées"}
                 </Text>
               </View>
               {isCheckingPush ? (
@@ -128,15 +136,20 @@ export default function SettingsScreen() {
                 <Switch
                   trackColor={{ false: colors.cardBorder, true: pushColor }}
                   thumbColor={colors.cardBg}
-                  value={pushEnabled}
+                  value={isEligible && pushEnabled}
                   onValueChange={handleTogglePush}
+                  disabled={!isEligible}
                   ios_backgroundColor={colors.cardBorder}
                 />
               )}
             </View>
             <InfoBanner
               icon="information-circle-outline"
-              text="Les notifications vous alertent en temps réel lorsqu'un hôpital proche a besoin de votre groupe sanguin."
+              text={
+                !isEligible
+                  ? "Les alertes sont automatiquement mises en pause pendant votre période de repos après un don."
+                  : "Les notifications vous alertent en temps réel lorsqu'un hôpital proche a besoin de votre groupe sanguin."
+              }
             />
           </View>
 

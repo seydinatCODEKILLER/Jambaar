@@ -12,7 +12,6 @@ import { useWelcomeStyles } from "@/src/styles/useWelcomeStyles";
 import { HeroOrb } from "@/src/components/welcome/HeroOrb";
 import { PrimaryButton } from "@/src/components/welcome/PrimaryButton";
 
-// Logo gardé en local car très petit et spécifique à cet écran
 function JambaarLogo() {
   const colors = useColors();
   return (
