@@ -9,12 +9,7 @@ import {
   VerifyOtpPayload,
 } from "../types/auth.types";
 import { registrationManager } from "@/src/utils/registration.utils";
-
-// ─── Helper pour extraire le message d'erreur Axios ──────────
-const getErrorMessage = (err: any) =>
-  err?.response?.data?.message ||
-  err?.message ||
-  "Une erreur inattendue est survenue";
+import { getErrorMessage } from "../utils/error.utils";
 
 // ─── Register Donor ───────────────────────────────────────────
 export const useRegisterDonor = () => {

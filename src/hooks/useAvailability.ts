@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { usersApi } from "@/src/api/users.api";
 import { useAuthStore } from "@/src/store/auth.store";
+import { QUERY_KEYS } from "@/src/constants/query_key";
 import Toast from "react-native-toast-message";
 
 export const useUpdateAvailability = () => {
@@ -8,16 +9,14 @@ export const useUpdateAvailability = () => {
   const { user, updateUser } = useAuthStore();
 
   return useMutation({
-    // L'API renvoie Promise<{ id: string; isAvailable: boolean }>
     mutationFn: (isAvailable: boolean) =>
       usersApi.updateAvailability(isAvailable),
 
     // ── 1. AVANT la requête (Optimisme) ──────────────────
     onMutate: async (newAvailability) => {
-      await queryClient.cancelQueries({ queryKey: ["currentUser"] });
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.me });
       const previousUser = user;
 
-      // Mise à jour optimiste de Zustand (L'UI bouge instantanément)
       if (user) {
         await updateUser({ isAvailable: newAvailability });
       }
@@ -27,13 +26,11 @@ export const useUpdateAvailability = () => {
 
     // ── 2. SI ÇA RÉUSSIT ──────────────────────────────────
     onSuccess: (data) => {
-      // 🛑 CORRECTION ICI : 'data' correspond directement à { id, isAvailable }
-      // Pas besoin de data.user
       if (data?.isAvailable !== undefined) {
         updateUser({ isAvailable: data.isAvailable });
       }
-      
-      queryClient.invalidateQueries({ queryKey: ["nearbyAlerts"] });
+
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.nearbyAlerts });
     },
 
     // ── 3. SI ÇA ÉCHOUE (Rollback) ───────────────────────
@@ -51,7 +48,7 @@ export const useUpdateAvailability = () => {
 
     // ── 4. TOUJOURS À LA FIN ──────────────────────────────
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.me });
     },
   });
 };

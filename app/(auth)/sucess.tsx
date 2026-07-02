@@ -15,13 +15,11 @@ import { useColors, useThemedStyles } from "@/src/theme/useTheme";
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get("window");
 
-// Le bouton "Confirmer" est centré horizontalement, à une distance fixe
-// du bas de l'écran (cf. footer ci-dessous). On en déduit le centre de
-// l'iris pour que le cercle parte exactement de cet endroit.
-const BTN_SIZE = 60;
-const BTN_BOTTOM_OFFSET = 96; // distance entre le bas de l'écran et le centre du bouton
+// Le bouton "empreinte digitale" est centré au milieu de l'écran.
+// L'iris part exactement de ce point.
+const BTN_SIZE = 84;
 const IRIS_ORIGIN_X = SCREEN_W / 2;
-const IRIS_ORIGIN_Y = SCREEN_H - BTN_BOTTOM_OFFSET;
+const IRIS_ORIGIN_Y = SCREEN_H / 2;
 
 // Rayon nécessaire pour que le cercle couvre l'intégralité de l'écran,
 // quel que soit le point de départ (distance au coin le plus éloigné).
@@ -38,7 +36,9 @@ export default function SuccessScreen() {
   const router = useRouter();
   const colors = useColors();
 
-  const [phase, setPhase] = useState<"idle" | "filling" | "done">("idle");
+  const [phase, setPhase] = useState<"idle" | "scanning" | "filling" | "done">(
+    "idle",
+  );
 
   const irisDiameter = useRef(new Animated.Value(0)).current; // 0 -> 2*MAX_RADIUS
   const irisOpacity = useRef(new Animated.Value(1)).current;
@@ -46,12 +46,15 @@ export default function SuccessScreen() {
   const successFade = useRef(new Animated.Value(0)).current;
   const successLineHeight = useRef(new Animated.Value(0)).current;
   const btnScale = useRef(new Animated.Value(1)).current;
+  const pulseScale = useRef(new Animated.Value(1)).current;
+  const pulseOpacity = useRef(new Animated.Value(0.6)).current;
 
   const styles = useThemedStyles((c) => ({
     container: { flex: 1, backgroundColor: "#0a0a0a" },
-    safeArea: { flex: 1, justifyContent: "center" },
+    safeArea: { flex: 1 },
     content: {
       paddingHorizontal: 30,
+      paddingTop: 40,
       alignItems: "center",
     },
     eyebrow: {
@@ -102,15 +105,34 @@ export default function SuccessScreen() {
       position: "absolute",
       backgroundColor: c.red,
     },
+    centerBtnWrapper: {
+      position: "absolute",
+      left: IRIS_ORIGIN_X - BTN_SIZE / 2,
+      top: IRIS_ORIGIN_Y - BTN_SIZE / 2,
+      width: BTN_SIZE,
+      height: BTN_SIZE,
+      alignItems: "center",
+      justifyContent: "center",
+    },
     footer: {
       position: "absolute",
       bottom: 0,
       left: 0,
       right: 0,
       paddingBottom: 26,
+      paddingHorizontal: 22,
       alignItems: "center",
+      justifyContent: "center",
     },
-    confirmBtn: {
+    pulseRing: {
+      position: "absolute",
+      width: BTN_SIZE,
+      height: BTN_SIZE,
+      borderRadius: BTN_SIZE / 2,
+      borderWidth: 1,
+      borderColor: c.red,
+    },
+    fingerprintBtn: {
       width: BTN_SIZE,
       height: BTN_SIZE,
       borderRadius: BTN_SIZE / 2,
@@ -120,11 +142,15 @@ export default function SuccessScreen() {
       justifyContent: "center",
     },
     confirmLabel: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      top: IRIS_ORIGIN_Y + BTN_SIZE / 2 + 14,
+      textAlign: "center",
       color: "#6a6a6a",
       fontSize: 11,
       fontWeight: "400",
       letterSpacing: 1,
-      marginTop: 10,
     },
     continueBtn: {
       width: "100%",
@@ -145,16 +171,63 @@ export default function SuccessScreen() {
     },
   }));
 
+  // Légère pulsation autour de l'empreinte tant qu'on attend le tap,
+  // pour inviter l'utilisateur à toucher.
+  React.useEffect(() => {
+    if (phase !== "idle") return;
+
+    const pulse = Animated.loop(
+      Animated.parallel([
+        Animated.sequence([
+          Animated.timing(pulseScale, {
+            toValue: 1.35,
+            duration: 1400,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseScale, {
+            toValue: 1,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.sequence([
+          Animated.timing(pulseOpacity, {
+            toValue: 0,
+            duration: 1400,
+            easing: Easing.out(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseOpacity, {
+            toValue: 0.6,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ]),
+      ]),
+    );
+
+    pulse.start();
+    return () => pulse.stop();
+  }, [phase, pulseScale, pulseOpacity]);
+
   const handleConfirm = useCallback(() => {
     if (phase !== "idle") return;
     setPhase("filling");
 
     Animated.parallel([
-      Animated.timing(btnScale, {
-        toValue: 0.92,
-        duration: 150,
-        useNativeDriver: true,
-      }),
+      Animated.sequence([
+        Animated.timing(btnScale, {
+          toValue: 0.88,
+          duration: 120,
+          useNativeDriver: true,
+        }),
+        Animated.timing(btnScale, {
+          toValue: 1.05,
+          duration: 140,
+          useNativeDriver: true,
+        }),
+      ]),
       Animated.timing(idleFade, {
         toValue: 0,
         duration: 300,
@@ -210,19 +283,19 @@ export default function SuccessScreen() {
       <StatusBar style="light" />
 
       <SafeAreaView style={styles.safeArea}>
-        {/* ── Contenu initial ── */}
+        {/* ── Contenu initial (en haut) ── */}
         <Animated.View style={{ opacity: idleFade }}>
           <View style={styles.content}>
             <Text style={styles.eyebrow}>ÉTAPE FINALE</Text>
             <Text style={styles.title}>Confirmez{"\n"}votre engagement</Text>
             <Text style={styles.subtitle}>
-              Une dernière validation et vous rejoignez la communauté des
-              donneurs.
+              Touchez l'empreinte pour valider votre inscription et rejoindre la
+              communauté des donneurs.
             </Text>
           </View>
         </Animated.View>
 
-        {/* ── Message de succès ── */}
+        {/* ── Message de succès (même zone, en haut) ── */}
         {phase === "done" && (
           <Animated.View
             style={[
@@ -242,7 +315,7 @@ export default function SuccessScreen() {
         )}
       </SafeAreaView>
 
-      {/* ── Iris rouge : s'ouvre depuis le bouton puis s'efface vers le noir ── */}
+      {/* ── Iris rouge : s'ouvre depuis l'empreinte (centre écran) puis s'efface vers le noir ── */}
       <Animated.View
         pointerEvents="none"
         style={[
@@ -260,25 +333,41 @@ export default function SuccessScreen() {
         ]}
       />
 
-      {/* ── Footer ── */}
-      <View style={styles.footer}>
-        {phase !== "done" ? (
-          <>
-            <Animated.View style={{ transform: [{ scale: btnScale }] }}>
-              <TouchableOpacity
-                onPress={handleConfirm}
-                activeOpacity={0.8}
-                disabled={phase === "filling"}
-                style={styles.confirmBtn}
-              >
-                <Ionicons name="arrow-forward" size={20} color={colors.red} />
-              </TouchableOpacity>
-            </Animated.View>
-            <Animated.Text style={[styles.confirmLabel, { opacity: idleFade }]}>
-              CONFIRMER
-            </Animated.Text>
-          </>
-        ) : (
+      {/* ── Bouton empreinte digitale : centré au milieu de l'écran ── */}
+      {phase !== "done" && (
+        <View style={styles.centerBtnWrapper} pointerEvents="box-none">
+          {/* Anneau de pulsation invitant au toucher */}
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              styles.pulseRing,
+              {
+                opacity: pulseOpacity,
+                transform: [{ scale: pulseScale }],
+              },
+            ]}
+          />
+          <Animated.View style={{ transform: [{ scale: btnScale }] }}>
+            <TouchableOpacity
+              onPress={handleConfirm}
+              activeOpacity={0.8}
+              disabled={phase === "filling"}
+              style={styles.fingerprintBtn}
+            >
+              <Ionicons name="finger-print" size={34} color={colors.red} />
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+      )}
+      {phase !== "done" && (
+        <Animated.Text style={[styles.confirmLabel, { opacity: idleFade }]}>
+          TOUCHEZ POUR CONFIRMER
+        </Animated.Text>
+      )}
+
+      {/* ── Footer : bouton continuer, affiché seulement après succès ── */}
+      {phase === "done" && (
+        <View style={styles.footer}>
           <Animated.View style={{ width: "100%", opacity: successFade }}>
             <TouchableOpacity
               onPress={handleContinue}
@@ -289,8 +378,8 @@ export default function SuccessScreen() {
               <Ionicons name="arrow-forward" size={15} color="#0a0a0a" />
             </TouchableOpacity>
           </Animated.View>
-        )}
-      </View>
+        </View>
+      )}
     </View>
   );
 }

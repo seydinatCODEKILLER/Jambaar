@@ -214,10 +214,10 @@ export const useSocket = () => {
         });
 
         queryClient.invalidateQueries({
-          queryKey: ["donation-days", "published"],
+          queryKey: QUERY_KEYS.publishedDaysAll,
         });
         queryClient.invalidateQueries({
-          queryKey: ["donation-days", "my-registrations"],
+          queryKey: QUERY_KEYS.myRegistrationsAll,
         });
         queryClient.invalidateQueries({
           queryKey: QUERY_KEYS.donationDay(data.dayId),
@@ -238,11 +238,9 @@ export const useSocket = () => {
         receivedAt: new Date(),
       });
 
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.publishedDaysAll });
       queryClient.invalidateQueries({
-        queryKey: ["donation-days", "published"],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["donation-days", "my-registrations"],
+        queryKey: QUERY_KEYS.myRegistrationsAll,
       });
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.donationDay(data.dayId),
@@ -270,7 +268,7 @@ export const useSocket = () => {
         }
 
         queryClient.invalidateQueries({
-          queryKey: ["donation-days", "my-registrations"],
+          queryKey: QUERY_KEYS.myRegistrationsAll,
         });
         queryClient.invalidateQueries({
           queryKey: QUERY_KEYS.donationDay(data.dayId),

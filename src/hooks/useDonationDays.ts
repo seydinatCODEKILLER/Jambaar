@@ -1,9 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { donationDaysApi } from "@/src/api/donationDays.api";
 import { QUERY_KEYS } from "@/src/constants/query_key";
-import {
-  ListDaysFilters,
-} from "@/src/types/donation-day.types";
+import { ListDaysFilters } from "@/src/types/donation-day.types";
 
 // ─── Queries (Lecture) ──────────────────────────────────────────
 
@@ -39,11 +37,11 @@ export function useRegisterDonor() {
     onSuccess: (_, dayId) => {
       // Invalide toutes les listes de journées publiées (peu importe les filtres)
       queryClient.invalidateQueries({
-        queryKey: ["donation-days", "published"],
+        queryKey: QUERY_KEYS.publishedDaysAll,
       });
       // Invalide toutes les listes de mes inscriptions
       queryClient.invalidateQueries({
-        queryKey: ["donation-days", "my-registrations"],
+        queryKey: QUERY_KEYS.myRegistrationsAll,
       });
       // Invalide le détail de cette journée spécifique
       queryClient.invalidateQueries({
@@ -61,10 +59,10 @@ export function useCancelDonorRegistration() {
       donationDaysApi.cancelDonorRegistration(dayId),
     onSuccess: (_, dayId) => {
       queryClient.invalidateQueries({
-        queryKey: ["donation-days", "published"],
+        queryKey: QUERY_KEYS.publishedDaysAll,
       });
       queryClient.invalidateQueries({
-        queryKey: ["donation-days", "my-registrations"],
+        queryKey: QUERY_KEYS.myRegistrationsAll,
       });
       queryClient.invalidateQueries({
         queryKey: QUERY_KEYS.donationDay(dayId),

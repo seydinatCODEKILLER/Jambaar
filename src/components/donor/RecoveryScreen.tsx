@@ -1,12 +1,15 @@
 import React, { useMemo } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useThemedStyles, useColors } from "@/src/theme/useTheme";
 import { HealthTipCard } from "@/src/components/donor/HealthTipCard";
 import {
-  getShuffledTips,
-  CATEGORY_META,
+  HEALTH_TIPS,
   TipCategory,
+  getPeriodicTips,
+  getDaysUntilNextTipsRefresh,
+  getCurrentTipsCycle,
+  TIPS_REFRESH_INTERVAL_DAYS,
 } from "@/src/constants/healthTips";
 
 // ─── Types ────────────────────────────────────────────────────
@@ -18,6 +21,9 @@ interface RecoveryScreenProps {
 
 // ─── Constantes ───────────────────────────────────────────────
 const TOTAL_REST_DAYS = 56;
+const TOTAL_TIPS_CYCLES = Math.ceil(
+  TOTAL_REST_DAYS / TIPS_REFRESH_INTERVAL_DAYS,
+);
 
 const PURPLE = {
   accent: "#7F77DD",
@@ -39,9 +45,16 @@ const CATEGORY_FILTERS: Array<{ key: TipCategory | "ALL"; label: string }> = [
 ];
 
 // ─── HeroCard ─────────────────────────────────────────────────
-function HeroCard({ daysLeft, firstName, onGoToEligibility }: RecoveryScreenProps) {
+function HeroCard({
+  daysLeft,
+  firstName,
+  onGoToEligibility,
+}: RecoveryScreenProps) {
   const elapsed = Math.max(0, TOTAL_REST_DAYS - daysLeft);
-  const progressPct = Math.min(Math.round((elapsed / TOTAL_REST_DAYS) * 100), 100);
+  const progressPct = Math.min(
+    Math.round((elapsed / TOTAL_REST_DAYS) * 100),
+    100,
+  );
 
   const styles = useThemedStyles((c) => ({
     card: {
@@ -123,7 +136,11 @@ function HeroCard({ daysLeft, firstName, onGoToEligibility }: RecoveryScreenProp
       marginBottom: 6,
     },
     progressLabelLeft: { color: c.textMuted, fontSize: 10 },
-    progressLabelRight: { color: PURPLE.accent, fontSize: 10, fontWeight: "600" as const },
+    progressLabelRight: {
+      color: PURPLE.accent,
+      fontSize: 10,
+      fontWeight: "600" as const,
+    },
     progressTrack: {
       height: 3,
       backgroundColor: PURPLE.bg,
@@ -217,14 +234,16 @@ export function RecoveryScreen({
   onGoToEligibility,
 }: RecoveryScreenProps) {
   const colors = useColors();
-  const [activeCategory, setActiveCategory] = React.useState<TipCategory | "ALL">("ALL");
+  const [activeCategory, setActiveCategory] = React.useState<
+    TipCategory | "ALL"
+  >("ALL");
 
   const styles = useThemedStyles((c) => ({
     sectionRow: {
       flexDirection: "row" as const,
       alignItems: "center" as const,
       gap: 7,
-      marginBottom: 12,
+      marginBottom: 4,
     },
     sectionTitle: {
       color: c.white,
@@ -232,17 +251,41 @@ export function RecoveryScreen({
       fontWeight: "700" as const,
       flex: 1,
     },
-    sectionCount: {
+    // Bandeau "prochain lot de conseils dans X jours"
+    refreshRow: {
+      flexDirection: "row" as const,
+      alignItems: "center" as const,
+      gap: 5,
+      marginBottom: 10,
+    },
+    refreshText: {
       color: c.textSubtle,
       fontSize: 11,
-      backgroundColor: c.cardBg,
-      borderWidth: 1,
-      borderColor: c.cardBorder,
-      borderRadius: 20,
-      paddingHorizontal: 8,
-      paddingVertical: 2,
     },
-    // Filtres horizontaux scrollables
+    refreshTextHighlight: {
+      color: PURPLE.accentLight,
+      fontWeight: "600" as const,
+    },
+    // Points de progression (un par cycle de conseils)
+    cycleDots: {
+      flexDirection: "row" as const,
+      gap: 4,
+      marginBottom: 14,
+    },
+    cycleDot: {
+      width: 5,
+      height: 5,
+      borderRadius: 3,
+      backgroundColor: c.cardBorder,
+    },
+    cycleDotDone: {
+      backgroundColor: PURPLE.accent,
+    },
+    cycleDotActive: {
+      width: 14,
+      backgroundColor: PURPLE.accentLight,
+    },
+    // Filtres horizontaux
     filtersWrap: {
       marginBottom: 14,
     },
@@ -267,14 +310,29 @@ export function RecoveryScreen({
     chipTextActive: { color: PURPLE.accentLight },
   }));
 
-  const allTips = useMemo(() => getShuffledTips(daysLeft), [daysLeft]);
-  const displayedTips = useMemo(
+  const elapsed = Math.max(0, TOTAL_REST_DAYS - daysLeft);
+
+  // Pool de conseils respectant le filtre de catégorie choisi
+  const categoryPool = useMemo(
     () =>
       activeCategory === "ALL"
-        ? allTips
-        : allTips.filter((t) => t.category === activeCategory),
-    [allTips, activeCategory],
+        ? HEALTH_TIPS
+        : HEALTH_TIPS.filter((t) => t.category === activeCategory),
+    [activeCategory],
   );
+
+  // Lot de conseils du jour — se renouvelle tous les TIPS_REFRESH_INTERVAL_DAYS jours
+  const displayedTips = useMemo(
+    () => getPeriodicTips(elapsed, categoryPool),
+    [elapsed, categoryPool],
+  );
+
+  const daysUntilRefresh = useMemo(
+    () => getDaysUntilNextTipsRefresh(elapsed),
+    [elapsed],
+  );
+
+  const currentCycle = useMemo(() => getCurrentTipsCycle(elapsed), [elapsed]);
 
   return (
     <>
@@ -289,7 +347,39 @@ export function RecoveryScreen({
       <View style={styles.sectionRow}>
         <Ionicons name="sparkles-outline" size={15} color={colors.amber} />
         <Text style={styles.sectionTitle}>Conseils de récupération</Text>
-        <Text style={styles.sectionCount}>{displayedTips.length}</Text>
+      </View>
+
+      {/* ── Fréquence de renouvellement ── */}
+      <View style={styles.refreshRow}>
+        <Ionicons name="time-outline" size={12} color={colors.textSubtle} />
+        <Text style={styles.refreshText}>
+          {daysUntilRefresh <= 1 ? (
+            <Text style={styles.refreshTextHighlight}>
+              Nouveaux conseils demain
+            </Text>
+          ) : (
+            <>
+              Nouveaux conseils dans{" "}
+              <Text style={styles.refreshTextHighlight}>
+                {daysUntilRefresh} jours
+              </Text>
+            </>
+          )}
+        </Text>
+      </View>
+
+      {/* ── Points de progression (un par cycle sur les 56 jours) ── */}
+      <View style={styles.cycleDots}>
+        {Array.from({ length: TOTAL_TIPS_CYCLES }).map((_, i) => (
+          <View
+            key={i}
+            style={[
+              styles.cycleDot,
+              i < currentCycle && styles.cycleDotDone,
+              i === currentCycle && styles.cycleDotActive,
+            ]}
+          />
+        ))}
       </View>
 
       {/* ── Filtres ── */}
@@ -304,7 +394,9 @@ export function RecoveryScreen({
                 activeOpacity={0.75}
                 style={[styles.chip, isActive && styles.chipActive]}
               >
-                <Text style={[styles.chipText, isActive && styles.chipTextActive]}>
+                <Text
+                  style={[styles.chipText, isActive && styles.chipTextActive]}
+                >
                   {f.label}
                 </Text>
               </TouchableOpacity>
@@ -313,7 +405,7 @@ export function RecoveryScreen({
         </View>
       </View>
 
-      {/* ── Liste des tips ── */}
+      {/* ── Lot de conseils du jour (2-3 cartes, pas toute la liste) ── */}
       {displayedTips.map((tip) => (
         <HealthTipCard key={tip.id} tip={tip} />
       ))}

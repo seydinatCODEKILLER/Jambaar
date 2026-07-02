@@ -16,11 +16,10 @@ export const useRedeemReward = () => {
   return useMutation({
     mutationFn: (rewardId: string) => couponsApi.redeemReward(rewardId),
     onSuccess: () => {
-      // Invalider le solde de points et la liste des coupons
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.jambaarsProfile });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.me });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.myCoupons });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.rewards }); // Rafraîchir le stock
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.rewards });
     },
   });
 };

@@ -169,7 +169,58 @@ export const HEALTH_TIPS: HealthTip[] = [
   },
 ];
 
-// ─── Helpers ───────────────────────────────────────────────────
+// ─── Rotation périodique ────────────────────────────────────────
+// Au lieu d'afficher tous les conseils d'un coup, on en montre un petit
+// lot qui se renouvelle tous les TIPS_REFRESH_INTERVAL_DAYS jours. Ça crée
+// un rendez-vous régulier pendant les 56 jours de repos, sans noyer le
+// donneur sous 12 cartes dès le premier jour.
+export const TIPS_REFRESH_INTERVAL_DAYS = 4; // nouveau lot tous les 3-4 jours
+export const TIPS_BATCH_SIZE = 3; // nombre de conseils affichés par lot
+
+/**
+ * Retourne le lot de conseils correspondant au jour courant de la période
+ * de repos. `elapsedDays` = nombre de jours écoulés depuis le don (0 = jour
+ * du don). Le lot change tous les TIPS_REFRESH_INTERVAL_DAYS jours et
+ * parcourt l'ensemble du pool fourni (utile pour respecter un filtre de
+ * catégorie) avant de reboucler.
+ */
+export function getPeriodicTips(
+  elapsedDays: number,
+  pool: HealthTip[] = HEALTH_TIPS,
+  batchSize: number = TIPS_BATCH_SIZE,
+  intervalDays: number = TIPS_REFRESH_INTERVAL_DAYS,
+): HealthTip[] {
+  if (pool.length === 0) return [];
+
+  const safeBatchSize = Math.min(batchSize, pool.length);
+  const cycleIndex = Math.floor(Math.max(0, elapsedDays) / intervalDays);
+  const offset = (cycleIndex * safeBatchSize) % pool.length;
+
+  const batch: HealthTip[] = [];
+  for (let i = 0; i < safeBatchSize; i++) {
+    batch.push(pool[(offset + i) % pool.length]);
+  }
+  return batch;
+}
+
+/** Nombre de jours restants avant l'apparition du prochain lot de conseils. */
+export function getDaysUntilNextTipsRefresh(
+  elapsedDays: number,
+  intervalDays: number = TIPS_REFRESH_INTERVAL_DAYS,
+): number {
+  const remainder = Math.max(0, elapsedDays) % intervalDays;
+  return remainder === 0 ? intervalDays : intervalDays - remainder;
+}
+
+/** Index du cycle courant (0-based) — utile pour un indicateur de progression. */
+export function getCurrentTipsCycle(
+  elapsedDays: number,
+  intervalDays: number = TIPS_REFRESH_INTERVAL_DAYS,
+): number {
+  return Math.floor(Math.max(0, elapsedDays) / intervalDays);
+}
+
+// ─── Helpers (conservé pour compatibilité) ──────────────────────
 /** Rotation stable basée sur les jours restants pour varier le contenu */
 export function getShuffledTips(daysLeft: number): HealthTip[] {
   const offset = daysLeft % HEALTH_TIPS.length;
